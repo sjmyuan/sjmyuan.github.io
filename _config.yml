@@ -4,7 +4,7 @@ email:       shang.jiaming@163.com
 author:      Shang Jiaming
 description: "Enjoy Life"
 baseurl:     ""
-url:         ""
+url:         "https://sjmyuan.github.io"
 date_format: "%b %-d, %Y"
 
 # Google services
@@ -94,7 +94,7 @@ text:
     email:    'Email Address'
     content:  'What would you like to say?'
     subject:  'New submission!'
-    submit:   'Say Hello'
+    submit:   'Submit'
     ajax:
       sending:  'sending..'
       sent:     'Message sent!'
