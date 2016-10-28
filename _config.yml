@@ -1,10 +1,10 @@
 # Site settings
-title:       Pixyll
-email:       your_email@example.com
-author:      John Otander
-description: "A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff."
+title:       Jiaming Space
+email:       shang.jiaming@163.com 
+author:      Shang Jiaming
+description: "Enjoy Life"
 baseurl:     ""
-url:         "http://pixyll.com"
+url:         ""
 date_format: "%b %-d, %Y"
 
 # Google services
@@ -71,8 +71,8 @@ share_hackernews: false
 
 text:
   pagination:
-    newer: 'Newer'
-    older: 'Older'
+    newer: 'Previous'
+    older: 'Next'
   share_buttons:
     text:         'Share this post!'
     facebook:     'Share on Facebook'
