@@ -1,8 +1,8 @@
 # Site settings
-title:       Jiaming Space
+title:       Jiaming Blog
 email:       shang.jiaming@163.com 
 author:      Shang Jiaming
-description: "Enjoy Life"
+description: "Enjoy Your Life"
 baseurl:     ""
 url:         "https://sjmyuan.github.io"
 date_format: "%b %-d, %Y"
@@ -22,7 +22,7 @@ show_related_posts:   false
 show_post_footers:    false
 show_social_icons:    false
 ajaxify_contact_form: false
-enable_mathjax: false
+enable_mathjax: true
 extended_fonts: false
 enable_anchorjs: false
 
