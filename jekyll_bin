@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#
+#invoke the ruby gem for jekyll
+bundle exec jekyll $@
