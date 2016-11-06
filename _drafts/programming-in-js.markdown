@@ -2,7 +2,6 @@
 layout: post
 title: "Programming in JS"
 excerpt: ""
-date: "2016-11-03 17:53:55 +0800"
 ---
 
 # Contents
