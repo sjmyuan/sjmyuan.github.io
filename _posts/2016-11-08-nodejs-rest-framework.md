@@ -286,3 +286,5 @@ app.listen(8080);
   + Can't find many people with opinions on Loopback. It seems fast to code, but tightly coupled to the database model magically. Every route needs a database model. And people don't seem to like its opinionated convention over configuration style
   + They make their initial documents look great, but they haven't implemented everything, and so they put shell documents out there with a small danger caveat that says it's not implemented
 
+# Conclusion 
+I choose to use express, because it is stable and has the biggest community. other frameworks have similar features to express,but has smaller community or is unstable.
