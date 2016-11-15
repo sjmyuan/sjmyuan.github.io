@@ -41,3 +41,16 @@ excerpt: ""
   + 详细描述了ECG等信号的特征
   + 详细讲解了2D emotion 模型
   + 根据这篇文章，只需找到合适的数据集即可开始实现算法
+
++ [https://www.evernote.com/l/ApipVmoHFx9DZ5jyjE4zrvKxQ69Y1fg_FVc](https://www.evernote.com/l/ApipVmoHFx9DZ5jyjE4zrvKxQ69Y1fg_FVc)
+  + 这篇摘要提到了MIT和德国一所大学的emotion dataset, 已经找到MIT的数据集，德国的还没有
+
++ [Wearable and Automotive Systems for Affect Recognition from Physiology](https://www.evernote.com/l/Aphh-USaadZIy6kAs2ncuONbgQNVGnQdznA)
+  + 详细介绍了BVP,EKG,Skin,EMG,Respiration的测量方法以及关于该指标的相关工作，很详细
+  + 详细讲解了EKG的频谱特征
+  + 总结了所有的情感模型理论 
+  + 对历史研究成果讲解的很透彻
+  + 实验使用的是8种情感模型
+  + 3.3给出了feature计算的具体公式和每种信号计算的featrue种类
+  + 3.5给出了详细的分类算法,再次提到了Fisher Projection
+  + 5.5.1详细介绍HRV,并提到了一个计算库http://ecg.mit.edu
