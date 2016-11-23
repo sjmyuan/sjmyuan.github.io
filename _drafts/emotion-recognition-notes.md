@@ -56,3 +56,20 @@ excerpt: ""
   + 3.3给出了feature计算的具体公式和每种信号计算的featrue种类
   + 3.5给出了详细的分类算法,再次提到了Fisher Projection
   + 5.5.1详细介绍HRV,并提到了一个计算库http://ecg.mit.edu
+  + 这篇文章给出的HRV featrue计算比较可行
+
++ [Emotion Detection and Recognition using HRV Features Derived from Photoplethysmogram Signals](https://www.evernote.com/l/Apgy2wSWnJNKa735I591_RmHoCBWZ6NcMVA)
+  + 该文章使用PPG信号作为物理信号源
+  + 对PPG信号的处理主要是HRV features,包含时域和频域两个部分
+  + 使用SVM进行情感识别
+  + 给出了系统架构图
+  + 给出了各个预处理过程的输出图形
+  + 指出不同频域带宽的比值预示着不同的情绪
+  + 给出了提取的featrue描述，但是没有具体计算公式
+  + 没有给出每个featrue是基于那种数据计算的，有没有进行光滑和normalize处理
+
++ [Heart rate variability](https://en.wikipedia.org/wiki/Heart_rate_variability)
+  + 指出featrue中的NN是用来替代RR,表示是normal的heart beat
+  + 指出在紧张时HRV的高频活动会降低
+  + 指出HRV是和呼吸相关的
+  + 给出了HRV的详细定义
