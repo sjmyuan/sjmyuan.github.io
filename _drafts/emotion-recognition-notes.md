@@ -44,6 +44,8 @@ excerpt: ""
 
 + [https://www.evernote.com/l/ApipVmoHFx9DZ5jyjE4zrvKxQ69Y1fg_FVc](https://www.evernote.com/l/ApipVmoHFx9DZ5jyjE4zrvKxQ69Y1fg_FVc)
   + 这篇摘要提到了MIT和德国一所大学的emotion dataset, 已经找到MIT的数据集，德国的还没有
+  + MIT的数据集没有数据格式说明，无法使用
+  + 德国大学的数据集能查找到的是RECOLA Database，但它不是任意下载的，需要申请
 
 + [Wearable and Automotive Systems for Affect Recognition from Physiology](https://www.evernote.com/l/Aphh-USaadZIy6kAs2ncuONbgQNVGnQdznA)
   + 详细介绍了BVP,EKG,Skin,EMG,Respiration的测量方法以及关于该指标的相关工作，很详细
