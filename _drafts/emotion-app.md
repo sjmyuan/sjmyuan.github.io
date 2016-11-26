@@ -83,7 +83,9 @@ $$
       + Mean for normalized signal
       + Variance for normalized signal
     + Frequency domain
-
+      ...
+  + HRV
+    ![HRV Features](/images/features.jpeg)
 
 ## Select Features
 
