@@ -68,8 +68,23 @@ excerpt: ""
   + 给出了提取的featrue描述，但是没有具体计算公式
   + 没有给出每个featrue是基于那种数据计算的，有没有进行光滑和normalize处理
 
-+ [Heart rate variability](https://en.wikipedia.org/wiki/Heart_rate_variability)
++ [Wiki:Heart rate variability](https://en.wikipedia.org/wiki/Heart_rate_variability)
   + 指出featrue中的NN是用来替代RR,表示是normal的heart beat
   + 指出在紧张时HRV的高频活动会降低
   + 指出HRV是和呼吸相关的
   + 给出了HRV的详细定义
+
++ [iOS用手机摄像头检测心率(PPG)](https://www.evernote.com/l/Apg4fKkZKQxNa5wdwgJOIjpjn9dIvTCOkpY)
+  + 完整描述了使用PPG检测心率的架构
+  + 使用带通滤波器进行预处理
+  + 使用基音检测算法检测波峰
+  + 提出了一些降低采样数据量的方法
+  + 给出了PPG的计算方法
+
++ [Paper:Heart rate variability](https://www.evernote.com/l/ApiDigYqYWNOY49kVkHgNNFO57xqeVCvml0)
+  + 指出时域分析优先选择SDNN,HRV Triangular index,RMSSD.
+
++ [A Real-Time QRS Detection Algorithm](https://www.evernote.com/l/ApgHrY9YrNRFiLFvqtf9w0p-lso4h7qjbNs)
+  + 给出了数据预处理的过程，模拟信号滤波器将ECG信号限制在50Hz,以200p/s的采样频率进行离散化，经过带通滤波器(包括高通和低通)过滤噪音，经过另外一个滤波器(貌似是估计导数)，再经过一个squaring process和moving window
+  + QRS 的频率在5-15Hz 
+  + 给出了高通和低通滤波器的数学公式

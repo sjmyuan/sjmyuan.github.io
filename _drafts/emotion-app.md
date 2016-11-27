@@ -8,13 +8,24 @@ excerpt: ""
 {:toc}
 
 # 技术要点
+## Signal
+![ECG](/images/ECG.png)
 
 ## Samples
 The sample rate is 20p/s, emotion signal length is between 2000 to 5000 point 
 
-## Segmention
-
 ## Data Preprocess
+
+### Denoising
+https://github.com/tru-hy/rpeakdetect/blob/master/rpeakdetect.py
+
+```python
+lowpass = scipy.signal.butter(1, highfreq/(rate/2.0), 'low')
+highpass = scipy.signal.butter(1, lowfreq/(rate/2.0), 'high')
+# TODO: Could use an actual bandpass filter
+ecg_low = scipy.signal.filtfilt(*lowpass, x=ecg)
+ecg_band = scipy.signal.filtfilt(*highpass, x=ecg_low)
+```
 
 ### Smooth
 Using Hanning window which length is 500 to make  convolution with emotion signal
@@ -29,7 +40,11 @@ $$
 \Gamma=\frac{g-min(g)}{max(g)-min(g)}
 $$
 
+## QRS Detection
+https://github.com/tru-hy/rpeakdetect/blob/master/rpeakdetect.py
+
 ## Extract Features
+HRV:git@github.com:rhenanbartels/hrv.git
 
 ### Features Defination
   + Mean for raw signal
@@ -68,6 +83,57 @@ $$
     \tilde{\delta}_x=\frac{1}{N-1}(\tilde{x}_N-\tilde{x}_1)
     $$
 
+  + meanNN
+
+    $$
+    \bar{x}=\frac{1}{N}\sideset{}{_{n=1}^N}\sum{x_n}
+    $$
+
+  + medianNN
+    + sort $$x_n$$ from smallest to biggest
+    + if N is odd, $$x_{N/2+1}$$ is the median value
+    + if N is even, $$\frac{x_{N/2}+x_{N/2+1}}{2}$$ is the median value
+
+  + SDNN
+
+    $$
+    s=\sqrt{\frac{1}{N}\sideset{}{_{n=1}^N}\sum{(x_n-\bar{x})^2}}
+    $$
+
+  + SDANN
+    + target arrays is the meanNN of  multiple record period
+    + calculate the SDNN of target arrays 
+
+  + pNN50 and NN50
+    Let's say:
+    + N is the HRV signal length
+    + $$N_{50}$$ is the number of interval difference of successive NN interval whoes value is greater than or equal to 50ms 
+
+    Then:
+    $$
+    pNN50=\frac{N_{50}}{N-1}\
+    NN50=N_{50}
+    $$
+
+  + RMSSD
+    The square root of the mean of the sum of the squares of differences between adjacent NN
+    intervals.
+    $$
+    RMSSD=\sqrt{\frac{1}{N-1}\sideset{}{_{n=2}^N}\sum{(x_n-x_{n-1})^2}}
+    $$
+
+  + SDNNi
+    + target arrays is the SDNN of  multiple record period
+    + calculate the mean of target arrays 
+
+  + meanHR
+    + target arrays is the HeartRate of  multiple record period
+    + calculate the mean of target arrays 
+
+  + stdHR
+    + target arrays is the HeartRate of  multiple record period
+    + calculate the standard deviation of target arrays 
+
 ### Feature for each signal
   + EMG
     + Mean for raw signal
@@ -102,3 +168,4 @@ $$
     $$
     X_c=\alpha X_c + (1-\alpha) X_t
     $$
++ 发现一款以HRV为基础的App,[HRV4Trainning](http://www.hrv4training.com/), 对HRV的各个features分析的很透彻，允许用户记录HRV并加注标签，和我以前的想法很类似。不过它是一款收费软件，目前用户10000，由意大利开发，主要针对体育锻炼。这个软件从侧面证明了我以PPG为信号输入，HRV为信号源的想法是没错的。
