@@ -8,11 +8,16 @@ excerpt: ""
 {:toc}
 
 # 技术要点
+
 ## Signal
+
 ![ECG](/images/ECG.png)
+
+![QRS](/images/QRS.png)
 
 ## Samples
 The sample rate is 20p/s, emotion signal length is between 2000 to 5000 point 
+### Resamples
 
 ## Data Preprocess
 
@@ -157,6 +162,13 @@ HRV:git@github.com:rhenanbartels/hrv.git
 
 ## SVM
 
+## Novelty and Outlier Detection
++ One-Class SVM
++ Isolation Forest
++ EllipticEnvelop
+
+![Outlier Detection Compare](/images/Outlier Detection Compare.png)
+
 # 实现思路
 + 由于很难找到能够使用的数据集，决定先实现数据处理算法，计算出feature向量，再根据向量间的距离来判断情绪是否有起伏。
 + 从目前查到的资料看，使用BVP(Blood Volume Pulse)信号进行情感预测是比较可行的，该信号可通过手机摄像头获取，且有iOS代码库可供参考：https://github.com/chroman/HeartBeats
@@ -169,3 +181,8 @@ HRV:git@github.com:rhenanbartels/hrv.git
     X_c=\alpha X_c + (1-\alpha) X_t
     $$
 + 发现一款以HRV为基础的App,[HRV4Trainning](http://www.hrv4training.com/), 对HRV的各个features分析的很透彻，允许用户记录HRV并加注标签，和我以前的想法很类似。不过它是一款收费软件，目前用户10000，由意大利开发，主要针对体育锻炼。这个软件从侧面证明了我以PPG为信号输入，HRV为信号源的想法是没错的。
++ 发现如果要判断情绪变化，只需判断当前feature是否异常就可以了，这就用到了无监督学习算法，目前看到的有One-Class SVM, Isolation Forest, EllipticEnvelop, 从查到的资料
+  看Isolation Forest 对高维度变量的准确度最高，暂时选用这个算法进行分析。
+
+## 算法流程
+![EmotionApp](/images/EmotionApp.jpg)
