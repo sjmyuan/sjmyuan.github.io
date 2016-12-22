@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Emotion App
+title: Emotion Recognization App
 excerpt: ""
 ---
 
@@ -16,21 +16,20 @@ excerpt: ""
 ![QRS](/images/QRS.png)
 
 ## Samples
-The sample rate is 20p/s, emotion signal length is between 2000 to 5000 point 
-### Resamples
+The sample rate of phone camera is between 5Hz to 30Hz, but the ideal rate is 200Hz. so after geting data from camera, we should use interpolation to do resamples. 
 
 ## Data Preprocess
 
 ### Denoising
-https://github.com/tru-hy/rpeakdetect/blob/master/rpeakdetect.py
+  + [rpeakdetect](https://github.com/tru-hy/rpeakdetect/blob/master/rpeakdetect.py)
 
-```python
-lowpass = scipy.signal.butter(1, highfreq/(rate/2.0), 'low')
-highpass = scipy.signal.butter(1, lowfreq/(rate/2.0), 'high')
-# TODO: Could use an actual bandpass filter
-ecg_low = scipy.signal.filtfilt(*lowpass, x=ecg)
-ecg_band = scipy.signal.filtfilt(*highpass, x=ecg_low)
-```
+    ```python
+    lowpass = scipy.signal.butter(1, highfreq/(rate/2.0), 'low')
+    highpass = scipy.signal.butter(1, lowfreq/(rate/2.0), 'high')
+    # TODO: Could use an actual bandpass filter
+    ecg_low = scipy.signal.filtfilt(*lowpass, x=ecg)
+    ecg_band = scipy.signal.filtfilt(*highpass, x=ecg_low)
+    ```
 
 ### Smooth
 Using Hanning window which length is 500 to make  convolution with emotion signal
@@ -40,16 +39,13 @@ $$
 $$
 
 ### Normalized
-
-$$
-\Gamma=\frac{g-min(g)}{max(g)-min(g)}
-$$
+  + [sklearn.preprocessing.normalize()](http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.normalize.html)
 
 ## QRS Detection
-https://github.com/tru-hy/rpeakdetect/blob/master/rpeakdetect.py
+  + [rpeakdetect](https://github.com/tru-hy/rpeakdetect/blob/master/rpeakdetect.py)
 
 ## Extract Features
-HRV:git@github.com:rhenanbartels/hrv.git
+  + [hrv](https://github.com/rhenanbartels/hrv)
 
 ### Features Defination
   + Mean for raw signal
@@ -158,10 +154,6 @@ HRV:git@github.com:rhenanbartels/hrv.git
   + HRV
     ![HRV Features](/images/features.jpeg)
 
-## Select Features
-
-## SVM
-
 ## Novelty and Outlier Detection
 + One-Class SVM
 + Isolation Forest
@@ -171,7 +163,7 @@ HRV:git@github.com:rhenanbartels/hrv.git
 
 # 实现思路
 + 由于很难找到能够使用的数据集，决定先实现数据处理算法，计算出feature向量，再根据向量间的距离来判断情绪是否有起伏。
-+ 从目前查到的资料看，使用BVP(Blood Volume Pulse)信号进行情感预测是比较可行的，该信号可通过手机摄像头获取，且有iOS代码库可供参考：https://github.com/chroman/HeartBeats
++ 从目前查到的资料看，使用BVP(Blood Volume Pulse)信号进行情感预测是比较可行的，该信号可通过手机摄像头获取，且有iOS代码库可供参考：[HeartBeats](https://github.com/chroman/HeartBeats)
 + 剩下需要考虑的问题是该计算哪些feature，以及如何判断情绪起伏，目前能想到的方案是:
   + 按固定时间间隔获取BVP信号
   + 对BVP信号进行预处理并计算feature向量
