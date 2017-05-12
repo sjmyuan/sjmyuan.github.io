@@ -14,6 +14,11 @@ Shang Jiaming has four years’ experience in java development, two years’ exp
 
 ## RealCommercial(2016/05 - )
 
+**Involved System**
+
+ + Syndication API: I'm just familiar with its deployment infrastructure and deploy it into multiple region. 
+ + News: I'm familiar with it's code and infrastrueture, build its pipeline and implement ui and bff functions. 
+
 **My Responsibilities**:
 
  + Create CI/CD for project 
