@@ -1,6 +1,6 @@
 ---
 layout: post
-title: docker-compose how to link external container
+title: docker-compose link external container
 excerpt: ""
 ---
 
@@ -15,7 +15,7 @@ docker run -itd --network=multi-host-network db
 ~~~~
 
 ### Add external exist network in docker-compose
-~~~~yml
+~~~~bash
 networks:
   default:
     external:
@@ -23,7 +23,7 @@ networks:
 ~~~~
 
 ### Link container outside docker-compose
-~~~~yml
+~~~~bash
 links:
-	- db
+  - db
 ~~~~
