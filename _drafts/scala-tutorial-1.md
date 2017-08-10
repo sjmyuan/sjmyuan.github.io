@@ -1,6 +1,9 @@
+---
+layout: post
 title: Scala Tutorial 1
 excerpt: ""
 ---
+
 # Contents
 {:.no_toc}
 
@@ -12,25 +15,32 @@ By default, sbt follows Maven project layout i.e. Scala source files are placed 
 ![scala-project-structure](/images/scala-project-structure.png)
 
 + build.sbt
+
   Setting dependency, project configuration, task, scalac options, and so on.
 
 + plugin.sbt
+
   Setting the plugin of this project
 
 + build.properties
+
   Setting the sbt version
 
 + Dependencies.scala
+
   Define the custom task or configuration
 
 ## How to create a scala project?
 + Copy
+
   Copy an exsiting project, then modify the build.sbt, plugin.sbt, build.properties to use your project configuration
 
 + Shell
+
   Generate an universal project structure by shell script, here is an [example](https://github.com/sjmyuan/sbt-structure-generator)
 
 + Giter8
+
   sbt support Giter8 template, we can generate an project structure from an template
 
   ~~~ scala
@@ -46,6 +56,7 @@ It is used to define a setting that overwrites any previous value without referr
 ![sbt-overriding-values](/images/sbt-overriding-settings.png)
 
 + Common options
+
   ~~~ scala
   name := "tasky"
   version := "0.1.0"
@@ -54,11 +65,13 @@ It is used to define a setting that overwrites any previous value without referr
   ~~~
 
 + scala compiler options
+
   ~~~ scala
   scalacOptions ++= Seq("-feature", "-language:_", "-unchecked", "-deprecation", "-encoding", "utf8")
   ~~~
 
 You can find all the options by following command
+
 ~~~ scala
 sbt settings
 ~~~
@@ -121,6 +134,7 @@ gitCommitCountTask := {
 ~~~
 
 You can find all the task by following command
+
 ~~~ scala
 sbt tasks
 ~~~
@@ -137,4 +151,5 @@ sbt package
 ## How to write main method?
 + App
 + Object
+
 ## How to write test?
