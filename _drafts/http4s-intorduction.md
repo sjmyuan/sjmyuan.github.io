@@ -64,7 +64,7 @@ BlazeBuilder.bindHttp(port, "0.0.0.0")
 
 ### How to create a service?
 
-An HttpService is a simple alias for Kleisli[Task, Request, Response], you can create a service simply like this:
+An HttpService is a simple alias for [Kleisli[Task, Request, Response]](https://typelevel.org/cats/datatypes/kleisli.html), you can create a service simply like this:
 
 ~~~ scala
 object HellowordService{
@@ -79,19 +79,19 @@ object HellowordService{
 
 * Method
 
-~~~ scala
-  case GET -> Root / "hello" / name =>
-  //    ^
-  //  Method
-~~~
+  ~~~ scala
+    case (GET|POST) -> Root / "hello" / name =>
+    //       ^
+    //     Method
+  ~~~
 
 * Path parameter
 
-~~~ scala
-  case GET -> Root / "hello" / name =>
-  //                            ^
-  //                        Path parameter
-~~~
+  ~~~ scala
+    case GET -> Root / "hello" / name / IntVar(id) / LongVar(hash) =>
+    //                            ^        ^            ^
+    //                         String     Int          Long
+  ~~~
 
 * Query Paramerter
   * Required query parameter
@@ -120,17 +120,43 @@ object HellowordService{
   * Multiple query parameter
 
     ~~~ scala
-      object userName extends OptionalQueryParamDecoderMatcher[String]("user_name")
+      // url is /hello?user_name=john&password=123
+
+      object userName extends QueryParamDecoderMatcher[String]("user_name")
+      object password extends QueryParamDecoderMatcher[String]("password")
+      case GET -> Root / "hello" :? userName(name) +& password(psw) =>
+      //                                           ^
+      //                                 Multiple query parameter
+    ~~~
+
+  * Optional query parameter which occurs multiple times
+
+    ~~~ scala
+      // url is /hello?user_name=john&user_name=lili
+      // or /hello
+
+      object userName extends OptionalMultiQueryParamDecoderMatcher[String]("user_name")
       case GET -> Root / "hello" :? userName(name) =>
       //                                      ^
-      //                           Optional query parameter
+      //                        Occurs multiple times query parameter(List(john,lili))
     ~~~
+
 
 ### How to process request?
 
-#### Header
-#### Status
-#### Body
+* Header
+
+  ~~~ scala
+    case request@GET -> Root / "hello" =>
+    puts request.headers
+  ~~~
+
+* Body
+
+  ~~~ scala
+    case request@GET -> Root / "hello" =>
+    puts request.body
+  ~~~
 
 ### How to return response?
 
@@ -138,9 +164,21 @@ object HellowordService{
 #### Status
 #### Body
 
-## How to add plugin?
+## How to add middleware?
 
 ### How to support CORS?
+
+~~~ scala
+object HellowordService{
+  def apply():HttpService = CORS(HttpService {
+  //                         ^
+  //                    CORS middleware
+    case GET -> Root / "hello" / name =>
+      Ok(s"Hello, $name.")
+  })
+}
+~~~
+
 
 ## How to test?
 
