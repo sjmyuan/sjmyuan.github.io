@@ -154,15 +154,38 @@ object HellowordService{
 * Body
 
   ~~~ scala
+    // body is {"name": "john"}
+
+    case class Name(name:String)
+    val decoder = implicitly[Decoder[Name]]
+    implicit val entityDecoder = jsonOf(decoder)
+
     case request@GET -> Root / "hello" =>
-    puts request.body
+    puts request.as[Name]
   ~~~
 
 ### How to return response?
 
-#### Header
-#### Status
-#### Body
+* Header
+
+~~~ scala
+Ok().putHeaders(Header("Vary", "Origin,Access-Control-Request-Methods"))
+~~~
+
+* Status
+
+~~~ scala
+Ok()
+BadRequest()
+~~~
+
+* Body
+
+~~~ scala
+case class Name(name:String)
+val lili = Name("lili")
+Ok(lili.asJson.noSpaces)
+~~~
 
 ## How to add middleware?
 
@@ -183,4 +206,35 @@ object HellowordService{
 ## How to test?
 
 ### Unit test
+
+* Mock request
+
+  ~~~ scala
+  val mockRequest = Request(Method.GET, Uri(path = "/", query = Query(("name", Some("lili")))))
+  HellowordService().run(mockRequest).unsafeRun() // return the response of this request
+  ~~~
+
+* Mock response
+
+  ~~~ scala
+  val content = Source.fromResource("content.json").mkString.getBytes
+  val response = DisposableResponse(Response(body = Stream.emits[Task,Byte](content)), Task.now(()))
+  ~~~
+
 ### E2E test
+
+* Mock server
+
+  ~~~ scala
+  def mockServer(port: Int, mounts: Map[String, HttpService]): Server = {
+  //                          ^
+  //                        routes
+    mounts.foldLeft[ServerBuilder](BlazeBuilder.bindHttp(port, "localhost"))((builder, mount) => {
+      builder.mountService(mount._2, mount._1)
+    }).run
+  }
+
+  val server = mockServer(8080,Map( "/hello", HellowordService()))
+  //do test
+  server.shutdownNow()
+  ~~~
