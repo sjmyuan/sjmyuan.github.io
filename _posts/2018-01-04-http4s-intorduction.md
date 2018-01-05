@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Http4s Intorduction
+title: Http4s Introduction
 excerpt: ""
 ---
 # Contents
@@ -39,7 +39,7 @@ Add following configuration into your **build.sbt**
 ~~~ scala
 Http4sVersion=0.17.5
 libraryDependencies += Seq(
-  "org.http4s"  %% "http4s-blaze-server"  % Http4sVersion, // htt4s native backend server
+  "org.http4s"  %% "http4s-blaze-server"  % Http4sVersion, // http4s native backend server
   "org.http4s"  %% "http4s-blaze-client"  % Http4sVersion, // http4s http client
   "org.http4s"  %% "http4s-circe"         % Http4sVersion, // support encoding and decoding json based on circe
   "org.http4s"  %% "http4s-dsl"           % Http4sVersion) // support process request in type level
