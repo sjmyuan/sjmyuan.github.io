@@ -8,7 +8,7 @@ url:         "https://sjmyuan.github.io"
 date_format: "%b %-d, %Y"
 
 # Google services
-google_verification:
+google_verification: "S3Z39uzBqdmppvaZFLT5zGbOKe2KqRRSyGJ1PFmdn3U"
 # Use either direct GA implementation or set up GTM account
 # - using both will skew your data (leave blank to not use at all)
 google_analytics:
@@ -37,7 +37,7 @@ disqus_shortname:
 
 # Facebook Comments plugin
 # (leave blank to disable Facebook Comments, otherwise set it to true)
-facebook_comments:
+facebook_comments: true
 facebook_appid:
 facebook_comments_number: 10
 
