@@ -8,11 +8,29 @@ excerpt: ""
 
 **Consultant**
 
-Shang Jiaming has four years’ experience in java development, two years’ experience in scala development and three years’ experience in C# development. He also uses relational database like Oracle, Sybase IQ. He can learn and use different open source framework or development tools in his project history. He has a strong learning ability, easy-going personality and working enthusiasm. He is good at English without barrier to communicate, read and write English document.
+Shang Jiaming has four years experience in java development, three years experience in scala development and three years experience in C# development. He also uses relational database like Oracle, Sybase IQ. He can learn and use different open source framework or development tools in his project history. He has a strong learning ability, easy-going personality and working enthusiasm. He is good at English without barrier to communicate, read and write English document.
 
 # Thoughtworks Experience
 
-## RealCommercial(2016/05 - )
+## Residential(2017/03 - )
+
+**Involved System**
+
+ + Facebook Data Loader: I'm expert on it and build the infrastructure, develop main functions.
+ + FrontPage Companion API: I'm expert on it and build the infrastructure, develop main functions.
+ + Audience Maximiser: I'm familiar its code and develop main functions
+ + AgentAdmin: I'm familiar with its code and develop serveral main functions such as PANG, FrontPage High Resolution Image
+ + Listing Service: I'm familiar its code and develop functions
+ + Consumer Search: I'm familiar its code and develop functions
+
+**My Responsibilities**:
+
+ + As Tech Lead, Lead team to delivery high quality software
+ + Build software infrastructure
+ + Resolve hard tech issue
+ + Handle Incident event of system
+
+## RealCommercial(2016/05 - 2017/02)
 
 **Involved System**
 
@@ -68,8 +86,8 @@ The sake of this system is to detect and resolve the coverage and capability pro
 
 ## Skills
 
- + Java, C#, Scala, Python, C++, JS, Bash, Make
- + Sybase IQ, Oracle
+ + Scala, Java, Ruby, C#, Python, C++, JS, Bash, Make
+ + Sybase IQ, Oracle, MySQL
  + Linux
  + Docker
  + AWS
