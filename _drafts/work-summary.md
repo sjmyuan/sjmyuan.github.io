@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Work Summary
 excerpt: ""
 ---

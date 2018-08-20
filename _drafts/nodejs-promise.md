@@ -1,5 +1,4 @@
 ---
-layout: post
 title: NodeJs Promise
 ---
 + async work was trigged when new promise

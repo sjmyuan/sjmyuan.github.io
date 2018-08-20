@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Case Classes vs Enumeration in Demo
 excerpt: "We use Case Class and Enumeration to implement one requirement seperately, then let's see how they adapt for new requirements"
 ---

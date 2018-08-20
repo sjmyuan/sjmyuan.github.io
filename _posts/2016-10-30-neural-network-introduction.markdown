@@ -1,5 +1,4 @@
 ---
-layout: post
 title: "Neural Network Introduction"
 excerpt: ""
 date: "2016-10-30 17:31:25 +0800"

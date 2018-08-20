@@ -1,5 +1,4 @@
 ---
-layout: post
 title: kops Introduction
 excerpt: "A hello world of kops, you can learn how to use kops and some kubernetes demo"
 ---

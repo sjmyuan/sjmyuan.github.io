@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Scala Variance in Inheritance
 excerpt: ""
 tags: Scala

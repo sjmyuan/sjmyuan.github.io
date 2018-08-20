@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Http4s Introduction
 excerpt: ""
 ---

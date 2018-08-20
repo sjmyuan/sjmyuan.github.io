@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Outlook and Google Synchronization
 excerpt: ""
 ---

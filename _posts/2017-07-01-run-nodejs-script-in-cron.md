@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Run Node Script in Cron Job
 excerpt: ""
 ---

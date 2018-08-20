@@ -15,7 +15,6 @@ task :post, :title do |t, args|
   File.open(filename, "w") do |f|
     f << <<-EOS.gsub(/^    /, '')
     ---
-    layout: post
     title: #{title}
     date: #{Time.new.strftime('%Y-%m-%d %H:%M')}
     categories:
@@ -42,7 +41,6 @@ task :draft, :title do |t, args|
   File.open(filename, "w") do |f|
     f << <<-EOS.gsub(/^    /, '')
     ---
-    layout: post
     title: #{title}
     date: #{Time.new.strftime('%Y-%m-%d %H:%M')}
     categories:

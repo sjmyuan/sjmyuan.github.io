@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Fix the ESLint issue in Vim
 excerpt: "Create a custom maker to allow Neomake use local ESLint"
 ---

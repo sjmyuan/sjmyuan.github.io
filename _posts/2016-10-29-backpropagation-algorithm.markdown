@@ -1,5 +1,4 @@
 ---
-layout: post
 title: "Backpropagation Algorithm"
 excerpt: ""
 about: "Neural Network"

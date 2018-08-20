@@ -1,5 +1,4 @@
 ---
-layout: post
 title: docker-compose link external container
 excerpt: ""
 ---

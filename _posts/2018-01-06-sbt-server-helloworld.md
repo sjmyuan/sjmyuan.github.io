@@ -1,5 +1,4 @@
 ---
-layout: post
 title: sbt server hello world
 excerpt: ""
 ---

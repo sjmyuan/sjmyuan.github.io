@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Scala Tutorial 1
 excerpt: ""
 ---

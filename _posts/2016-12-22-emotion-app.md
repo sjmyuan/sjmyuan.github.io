@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Emotion Recognization App
 excerpt: ""
 ---
