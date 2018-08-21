@@ -1,13 +1,7 @@
 ---
-layout: post
 title: sbt server hello world
 excerpt: ""
 ---
-# Contents
-{:.no_toc}
-
-* Toc
-{:toc}
 
 ## 前言
 sbt 在今天发布了[v1.1.0 版本](https://github.com/sbt/sbt/releases/tag/v1.1.0)，新增了sbt-server 功能，支持[Language Server Protocol 3.0](https://microsoft.github.io/language-server-protocol/specificatio). 

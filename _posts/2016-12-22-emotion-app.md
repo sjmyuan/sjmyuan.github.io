@@ -1,11 +1,7 @@
 ---
-layout: post
 title: Emotion Recognization App
 excerpt: ""
 ---
-
-* Toc
-{:toc}
 
 # 技术要点
 

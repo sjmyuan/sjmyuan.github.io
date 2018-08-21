@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Category Theory
 excerpt: ""
 ---

@@ -1,7 +1,7 @@
 ---
-layout: post
 title: "Backpropagation Algorithm"
 excerpt: ""
+mathjax: true
 about: "Neural Network"
 date: "2016-10-29 20:56:49 +0800"
 ---

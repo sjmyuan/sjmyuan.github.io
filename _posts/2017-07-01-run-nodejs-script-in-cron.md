@@ -1,13 +1,7 @@
 ---
-layout: post
 title: Run Node Script in Cron Job
 excerpt: ""
 ---
-# Contents
-{:.no_toc}
-
-* Toc
-{:toc}
 
 ## What happen?
 I created a npm packge [s3syncer-node-client](https://github.com/sjmyuan/s3syncer-node-client) to upload the local files to s3 bucket.

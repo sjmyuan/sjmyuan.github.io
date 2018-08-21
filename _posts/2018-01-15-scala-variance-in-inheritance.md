@@ -1,14 +1,9 @@
 ---
-layout: post
 title: Scala Variance in Inheritance
 excerpt: ""
-tags: Scala
+tags: 
+  - Scala
 ---
-# Contents
-{:.no_toc}
-
-* Toc
-{:toc}
 
 # What is variance in Scala?
 

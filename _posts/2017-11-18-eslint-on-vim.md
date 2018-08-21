@@ -1,13 +1,7 @@
 ---
-layout: post
 title: Fix the ESLint issue in Vim
 excerpt: "Create a custom maker to allow Neomake use local ESLint"
 ---
-# Contents
-{:.no_toc}
-
-* Toc
-{:toc}
 
 ## Background
 I'm doing some JavaScript code work on Neovim and heavily depend on the plugin Neomake.

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Emotion Recognition Notes
 excerpt: "研究情感识别时读到的一些论文"
 ---
