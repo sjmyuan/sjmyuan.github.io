@@ -1,6 +1,7 @@
 ---
 title: "Backpropagation Through Time Algorithm"
 excerpt: ""
+mathjax: true
 date: "2016-10-29 22:18:03 +0800"
 ---
 

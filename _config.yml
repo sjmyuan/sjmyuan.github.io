@@ -102,7 +102,7 @@ analytics:
 author:
   name             : "Jiaming Shang"
   avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "I am an amazing person."
+  bio              : ""
   location         : "Xi'an China"
   email            : shangjiaming.yuan@gmail.com
   uri              :
@@ -113,7 +113,7 @@ author:
   flickr           :
   facebook         :
   foursquare       :
-  github           : https://github.com/sjmyuan
+  github           : sjmyuan
   gitlab           :
   google_plus      :
   keybase          :
@@ -255,6 +255,10 @@ compress_html:
   ignore:
     envs: development
 
+collections:
+  portfolio:
+    output: true
+    permalink: /:collection/:path/
 
 # Defaults
 defaults:
@@ -266,7 +270,8 @@ defaults:
       layout: single
       author_profile: true
       read_time: true
-      comments: # true
+      comments: true
+      toc: true
       share: true
       related: true
   # _pages
@@ -281,3 +286,11 @@ defaults:
       type: foo
     values:
       layout: single
+# _portfolio
+  - scope:
+      path: ""
+      type: portfolio
+    values:
+      layout: single
+      author_profile: false
+      share: true

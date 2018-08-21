@@ -1,6 +1,7 @@
 ---
 title: "Neural Network Introduction"
 excerpt: ""
+mathjax: true
 date: "2016-10-30 17:31:25 +0800"
 ---
 # Contents
