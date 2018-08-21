@@ -1,8 +1,6 @@
 ---
 title: NodeJS REST Framework
 ---
-* Toc
-{:toc}
 
 # Metrics
 

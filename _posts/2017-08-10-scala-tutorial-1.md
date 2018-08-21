@@ -3,12 +3,6 @@ title: Scala Tutorial 1
 excerpt: ""
 ---
 
-# Contents
-{:.no_toc}
-
-* Toc
-{:toc}
-
 ## What does the scala project looks like?
 By default, sbt follows Maven project layout i.e. Scala source files are placed inside src/main/scala and test source files are placed inside src/test/scala
 ![scala-project-structure](/images/scala-project-structure.png)
