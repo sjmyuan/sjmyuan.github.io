@@ -101,8 +101,8 @@ analytics:
 # Site Author
 author:
   name             : "Jiaming Shang"
-  avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : ""
+  avatar           : "/images/bio-photo.jpeg" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
+  bio              : "Developer, currently focusing on Scala and DevOps"
   location         : "Xi'an China"
   email            : shangjiaming.yuan@gmail.com
   uri              :
