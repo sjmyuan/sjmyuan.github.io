@@ -1,0 +1,58 @@
+---
+---
+
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.12.1 by Michael Rose
+  Copyright 2013-2018 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE.txt
+-->
+<html lang="{{ site.locale | slice: 0,2 | default: "en" }}" class="no-js">
+  <head>
+    {% include head.html %}
+    {% include head/custom.html %}
+  </head>
+
+  <body class="layout--{{ page.layout | default: layout.layout }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
+
+    {% include browser-upgrade.html %}
+    {% include masthead.html %}
+
+    <div class="initial-content">
+      {{ content }}
+      <div align="center" style="margin: 1em 0;">
+        <script type="text/javascript">
+            amzn_assoc_ad_type = "banner";
+            amzn_assoc_marketplace = "amazon";
+            amzn_assoc_region = "US";
+            amzn_assoc_placement = "assoc_banner_placement_default";
+            amzn_assoc_campaigns = "amazonhomepage";
+            amzn_assoc_banner_type = "rotating";
+            amzn_assoc_p = "48";
+            amzn_assoc_width = "728";
+            amzn_assoc_height = "90";
+            amzn_assoc_tracking_id = "sjmyuan-20";
+            amzn_assoc_linkid = "883f3d80869fc304a6eecf81090edb4c";
+        </script>
+        <script src="//z-na.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&Operation=GetScript&ID=OneJS&WS=1"></script>
+      </div>
+    </div>
+
+    {% if site.search == true %}
+      <div class="search-content">
+        {% include search/search_form.html %}
+      </div>
+    {% endif %}
+
+    <div class="page__footer">
+      <footer>
+        {% include footer/custom.html %}
+        {% include footer.html %}
+      </footer>
+    </div>
+
+    {% include scripts.html %}
+
+  </body>
+</html>
