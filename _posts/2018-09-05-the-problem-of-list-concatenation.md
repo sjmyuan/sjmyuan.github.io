@@ -98,7 +98,7 @@ To write a CPS function, we only add one extra argument called **continuation** 
 
   ```scala
   def sum(n:BigDecimal, continuation:BigDecimal=>BigDecimal):BigDecimal = {
-      if(n==0) f(0)
+      if(n==0) continuation(0)
       else sum(n-1, x=> continuation(x+n))
   }
   ```
@@ -208,7 +208,7 @@ According to the previous section, we can use CPS to convert this function to ta
 ```scala
 def concat[A](left:List[A],right:List[A],continuation:List[A]=>List[A]):List[A] = {
     left match {
-        case Nil => f(right)
+        case Nil => continuation(right)
         case head::tail => concat(tail,right, x=> continuation(head::x))
     }
 }
