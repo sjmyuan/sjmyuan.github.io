@@ -143,7 +143,8 @@ object HellowordService{
 
   ~~~ scala
     case request@GET -> Root / "hello" =>
-    puts request.headers
+      println(request.headers)
+      Ok()
   ~~~
 
 * Body
@@ -156,7 +157,8 @@ object HellowordService{
     implicit val entityDecoder = jsonOf(decoder)
 
     case request@GET -> Root / "hello" =>
-    puts request.as[Name]
+      println(request.as[Name])
+      Ok()
   ~~~
 
 ### How to return response?
