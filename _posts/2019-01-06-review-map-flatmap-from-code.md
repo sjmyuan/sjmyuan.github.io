@@ -1,5 +1,6 @@
 ---
 title: Review map and flatMap from code
+mathjax: true
 tags:
   - Scala
 ---
@@ -25,9 +26,11 @@ In the progress of code evolution, we can see **pure function** and **remove dup
 # The code without FP
 
 Let's start with a very simple code, it will get 4 numbers from console and do the calculation
+
 $$
 \sqrt{x1 \div x2+x3}-x4
 $$
+
 Obviously we need four functions here
 
 ```scala
@@ -283,13 +286,17 @@ val sqrtResult:Data = sumResult match {
 We can't use `map(computeIfNormal)` to simplify it, because `sqrt` is not a `pure function from born`, it return a complex data type, we can't pass it to `map`.
 
 And if we want to compute 
+
 $$
 x1 \div x2 \div x3
 $$
+
 Or
+
 $$
 \sqrt{\sqrt{x1}}
 $$
+
 We still can't use `map`. they all have the same pattern: two `pure function after refactor` which return complex data type want to compose.
 
 ## How to fix it?
