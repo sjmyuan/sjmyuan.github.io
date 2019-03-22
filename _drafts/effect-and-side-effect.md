@@ -154,27 +154,27 @@ Just like what we said in **Review map and flatMap from code**[^3] , we can crea
 
 ```scala
 sealed trait SpecialEffect[A]
-case class Pure[A](v:A) extends SpecialEffect[A]
-case class FlatMap[A, B](v:FileOps[A], f:A=>SpecialEffect[B]) extends SpecialEffect[B]
+case class FlatMap[A, B](v:FileOps[A], f:A=>FileOps[B]) extends SpecialEffect[B]
 ```
 
-The `flatMap` of `SpecialEffect` can be implemented like this
+The `flatMap` of `FileOps`, `interpreter` of `SpecialEffect` can be implemented like this
 
 ```scala
-def flatMap[B](v:SpecialEffect[A])(f:A=>SpecialEffect[B]):SpecialEffect[B] = v match {
-  case Pure(v1) => f(v1)
-  case FlatMap(v1,f1) => FlatMap(v1, x => flatMap(f1(x))(f))
-}
-```
-
-The interpreter of `SpecialEffect` can be implemented like this
-
-```scala
+def flatMap[B](v:FileOps[A])(f:A=>FileOps[B]):SpecialEffect[B] = FlatMap(v, f)
 def interpreter[A](v:SpecialEffect[A]):A = v match {
-  case Pure(v1) => v1
-  case FlatMap(v1,f1) => interpreter(f1(fileOpsInterpreter(v1)))
+  case FlatMap(v1,f1) => fileOpsInterpreter(f1(fileOpsInterpreter(v1)))
 }
 ```
+
+The `flatMap` is pure. but it is not a `flatMap` now, because its return type is not `FileOps`. Seems it's a conflict, we make it pure but we can't make it follow the pattern of `flatMap`. 
+
+Let's try a different way, if it is not possible to implement a `flatMap` for `FileOps` and we can use `SpecialEffect` to make the ideal `flatMap` pure, how about put the `FileOps` in `SpecialEffect`? then we can get a `flatMap` for `SpecialEffect` which contains all the information of `FileOps`. Let's implement a function to do this
+
+```scala
+def lift[A](v:FileOps[A]):SpecialEffect[A] = FlatMap(v, ???)
+```
+
+Yeah, we don't know how to implement the `f` of `FlatMap`, our idea is the `f` should be an identity function which won't do anything for the `v:FileOps`, but there is no way to use `FileOps` to stand for identity. 
 
 
 
