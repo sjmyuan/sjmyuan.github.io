@@ -106,7 +106,7 @@ def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):
 }
 ```
 
-Just like what we said in **Review map and flatMap from code**[^3] , we want to reduce the boilerplate
+we want to reduce the boilerplate
 
 ```scala
 if (fileOpsInterpreter(saveDataToCSV(???,???)))
@@ -115,27 +115,14 @@ else
    false
 ```
 
-Then we may refine the fileOpsInterpreter like this
+Then we may add a flatMap like this
 
 ```scala
-def fileOpsInterpreter[A](v:FileOps[A]):A = v match {
-  case ReadFile(path) => Source.fromFile(path).mkString
-  case SaveFile(path, content) => try {
-    val file = new File(path)
-    val bw = new BufferedWriter(new FileWriter(file))
-    bw.write(content)
-    bw.close()
-    true
-  } catch {
-    case e => false
-  }
-}
-
 def flatMap[B](v:FileOps[A])(f:A=>FileOps[B]):FileOps[B] = v match {
   case ReadFile(path) => f(fileOpsInterpreter(v))
   case SaveFile(path, content) => {
-    val result = fileOpsInterperter(v)
-    if(result) f(result) else ???
+    val isSuccess = fileOpsInterperter(v)
+    if(isSuccess) f(result) else ???
   }
 }
 ```
@@ -145,61 +132,49 @@ Then we can refine `saveCSVFiles` like this
 ```scala
 def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):Boolean = {
   fileOpsInterpreter(
-    flatMap(fileOpsInterpreter(saveDataToCSV("data1.csv",file1Content)))(
-    _ => flatMap(fileOpsInterpreter(saveDataToCSV("data2.csv",file2Content)))(
-      _ => fileOpsInterpreter(saveDataToCSV("data3.csv",file3Content))
+    flatMap(saveDataToCSV("data1.csv",file1Content))(
+    _ => flatMap(saveDataToCSV("data2.csv",file2Content))(
+      _ => saveDataToCSV("data3.csv",file3Content)
     )))
 }
 ```
 
-Oh yeah, We got a `flatMap`. But we find the `flatMap` and `fileOpsInterpreter` is not pure and there is one place we are not sure how to implement in `flatMap`.
+But we found the `flatMap` and `fileOpsInterpreter` are not pure and there is one place we are not sure how to implement in `flatMap`(we don't know which effect should be returned when the SaveFile operation failed).
 
-# The type of Effect
+At this stage, we can say we can't implement a pure `flatMap` for `FileOps` effect. Then what should we do? Can't we use the effect whose interpreter looks like `FileOps` ?
 
-In **Review map and flatMap from code**[^3] we talk about how to create an effect to make function pure and we know an effect need to have map and flatMap to make it easy to use. 
+# A special Effect
 
-In this section we will talk about the type of effect and how to implement their map and flatMap.
+As we can see in the last section, we need to solve two problem to make the `flatMap` of `FileOps` pure
 
-It looks very simple to implement map and flatMap for **Data** effect, I call this effect as **Data-Effect** which contains some data will be used by the outside of function. But there is another type of effect, I call it as **Action-Effect** which describe an action which need to be interpreted by the outside of function.
+* Side-Effect introduced by `fileOpsInterpreter`
+* Definite effect returned by `flatMap`
 
-## Data Effect
-
-Data-Effect is a wrapper of data, such as Option, Either, List etc. the implementation of map and flatMap for these effect looks simple and obvious, just need to unwrap the effect and apply function on the data. Let's take a look the impementation of Option.
+Just like what we said in **Review map and flatMap from code**[^3] , we can create an effect to remove the Side-Effect
 
 ```scala
-def map[A,B](option:Option[A])(f:A=>B):Option[B] = option match {
-    case Some(v) => Some(f(v))
-    case None => None
+sealed trait SpecialEffect[A]
+case class Pure[A](v:A) extends SpecialEffect[A]
+case class FlatMap[A, B](v:FileOps[A], f:A=>SpecialEffect[B]) extends SpecialEffect[B]
+```
+
+The `flatMap` of `SpecialEffect` can be implemented like this
+
+```scala
+def flatMap[B](v:SpecialEffect[A])(f:A=>SpecialEffect[B]):SpecialEffect[B] = v match {
+  case Pure(v1) => f(v1)
+  case FlatMap(v1,f1) => FlatMap(v1, x => flatMap(f1(x))(f))
 }
+```
 
-def flatMap[A,B](option:Option[A])(f:A=>Option[B]):Option[B] = option match {
-    case Some(v) => f(v)
-    case None => None
+The interpreter of `SpecialEffect` can be implemented like this
+
+```scala
+def interpreter[A](v:SpecialEffect[A]):A = v match {
+  case Pure(v1) => v1
+  case FlatMap(v1,f1) => interpreter(f1(fileOpsInterpreter(v1)))
 }
 ```
-
-Even Reader monad is a Data-Effect, its data is a function, let's see its implementation of map and flatMap
-
-```scala
-case class Reader[A, B](run: A => B)
-def map[A, B, C](reader: Reader[A, B])(f: B=>C):Reader[A, C] = 
-	Reader((a:A) => f(reader.run(a)))
-def flatMap[A, B, C](reader: Reader[A, B])(f: B=>Reader[A, C]): Reader[A, C] =
-    Reader((a:A) => f(reader.run(a)).run(a))
-```
-
-## Action Effect
-
-Let's see the following effect first
-
-```scala
-case User(name:String, age:Int)
-trait HttpClient[A]
-case class GetUser(name:String) extends HttpClient[User]
-case class CreateUser(user:User) extends HttpClient[Int]
-```
-
-Can we implement map and flatMap for this effect?
 
 
 
@@ -208,4 +183,6 @@ Can we implement map and flatMap for this effect?
 [^1]: [Side-Effect](https://en.wikipedia.org/wiki/Side_effect_(computer_science))
 [^2]: [Extensible Effects: an alternative to Monad Transformers](http://okmij.org/ftp/Haskell/extensible/index.html)
 [^3]: [Review map and flatMap from code](https://blog.shangjiaming.com/review-map-flatmap-from-code/#)
+
+[^4]: [Free Monad](https://typelevel.org/cats/datatypes/freemonad.html)
 
