@@ -176,6 +176,48 @@ def lift[A](v:FileOps[A]):SpecialEffect[A] = FlatMap(v, ???)
 
 Yeah, we don't know how to implement the `f` of `FlatMap`, our idea is the `f` should be an identity function which won't do anything for the `v:FileOps`, but there is no way to use `FileOps` to stand for identity. 
 
+So we have to refine the `SpecialEffect` like this
+
+```scala
+sealed trait SpecialEffect[A]
+case class Pure[A](v:A) extends SpecialEffect[A]
+case class FlatMap[A, B](v:FileOps[A], f: A=>SpecialEffect[B]) extends SpecialEffect[B]
+```
+
+Then the `lift` can be implemented like this
+
+```scala
+def lift[A](v:FileOps[A]):SpecialEffect[A] = FlatMap(v, x => Pure(x))
+```
+
+Cool, we wrapped the `FileOps` with `SpecialEffect` without changeing it, let's see the `flatMap` and `interpreter`
+
+```scala
+def flatMap[B](v:SpecialEffect[A])(f:A=>SpecialEffect[B]):SpecialEffect[B] = v match {
+  case Pure(v1) => f(v1)
+  case FlatMap(v1, f1) => FlatMap(v1, x => flatMap(f1(x))(f))
+}
+
+def interpreter[A](v:SpecialEffect[A]):A = v match {
+  case Pure(v1) => v1
+  case FlatMap(v1,f1) => interpreter(f1(fileOpsInterpreter(v1)))
+}
+```
+
+Then the `saveCSVFiles` can be refined like this
+
+```scala
+def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):Boolean = {
+  interpreter(
+    flatMap(lift(saveDataToCSV("data1.csv",file1Content)))(
+    _ => flatMap(lift(saveDataToCSV("data2.csv",file2Content)))(
+      _ => lift(saveDataToCSV("data3.csv",file3Content))
+    )))
+}
+```
+
+Ok the only thing is implement the if-else logic
+
 
 
 # References
