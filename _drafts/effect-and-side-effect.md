@@ -22,7 +22,7 @@ There are two type of interaction can be done between function and the outside o
 
 * Receive message from outside
 
-  A function usually uses input to receive message, but we also can implement it by return value, we will talk about it later.
+  A function usually uses input to receive message, but we also can implement it by return value(accually it return a new function to receive the message with input), see Reader monad.
 
 * Return message to outside
   A function without Side-Effect have to return message to outside by return value, the message returned by function is **Effect**.
@@ -31,7 +31,7 @@ There are two type of interaction can be done between function and the outside o
 
 All effects returned by function should have an interpreter which can be used to understand the effect by outside. 
 
-For example, when we invoke a function which return Option, we always need a pattern-match to interpret the return value
+For example, when we invoke a function which return Option, we always need a pattern-match to interpret the Option
 
 ```scala
 def div(v1:Double, v2:Double):Option[Double] = if(v2==0) None else Some(v1/v2)
@@ -49,7 +49,7 @@ $ optionInterpreter(div(1,0))
 The denominator can not be zero
 ```
 
-Let's see another example about file operations, we have an Effect to stand for different type of file operations
+Let's see another example about file operations, say we have an Effect to stand for different type of file operations
 
 ```scala
 sealed trait FileOps[A]
@@ -61,7 +61,7 @@ We also have some functions which return the FileOps effect
 
 ```scala
 def getConfiguration:FileOps[String] = ReadFile("./config.xml")
-def saveDataToCSV(name:String, content:String):FileOps[String] = SaveFile(s"./tmp/${name}",content)
+def saveDataToCSV(name:String, content:String):FileOps[Boolean] = SaveFile(s"./tmp/${name}",content)
 ```
 
 These functions are pure function, but pure function can't help us to create/read a file, so we need an interpreter to do these things
@@ -106,7 +106,7 @@ def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):
 }
 ```
 
-we want to reduce the boilerplate
+It looks ugly, could we reduce the boilerplate?
 
 ```scala
 if (fileOpsInterpreter(saveDataToCSV(???,???)))
@@ -115,7 +115,7 @@ else
    false
 ```
 
-Then we may add a flatMap like this
+Maybe we may add a flatMap like this
 
 ```scala
 def flatMap[B](v:FileOps[A])(f:A=>FileOps[B]):FileOps[B] = v match {
@@ -141,16 +141,16 @@ def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):
 
 But we found the `flatMap` and `fileOpsInterpreter` are not pure and there is one place we are not sure how to implement in `flatMap`(we don't know which effect should be returned when the SaveFile operation failed).
 
-At this stage, we can say we can't implement a pure `flatMap` for `FileOps` effect. Then what should we do? Can't we use the effect whose interpreter looks like `FileOps` ?
+At this stage, we can say we can't implement a pure `flatMap` for `FileOps` effect. Then what should we do? Can't we use the effect whose interpreter looks like `FileOps` (it contains side-effect) ?
 
 # A special Effect
 
-As we can see in the last section, we need to solve two problem to make the `flatMap` of `FileOps` pure
+As we can see in the last section, we need to solve two problem to make the `flatMap` of `FileOps` pure and total.
 
 * Side-Effect introduced by `fileOpsInterpreter`
 * Definite effect returned by `flatMap`
 
-Just like what we said in **Review map and flatMap from code**[^3] , we can create an effect to remove the Side-Effect
+Just like what we said in **Review map and flatMap from code**[^3] , we can create an new effect to remove the Side-Effect
 
 ```scala
 sealed trait SpecialEffect[A]
@@ -161,12 +161,12 @@ The `flatMap` of `FileOps`, `interpreter` of `SpecialEffect` can be implemented 
 
 ```scala
 def flatMap[B](v:FileOps[A])(f:A=>FileOps[B]):SpecialEffect[B] = FlatMap(v, f)
-def interpreter[A](v:SpecialEffect[A]):A = v match {
+def specialInterpreter[A](v:SpecialEffect[A]):A = v match {
   case FlatMap(v1,f1) => fileOpsInterpreter(f1(fileOpsInterpreter(v1)))
 }
 ```
 
-The `flatMap` is pure. but it is not a `flatMap` now, because its return type is not `FileOps`. Seems it's a conflict, we make it pure but we can't make it follow the pattern of `flatMap`. 
+The `flatMap` is pure. but it is not a correct `flatMap` now, because its return type is not `FileOps`. Seems it's a conflict, we make it pure but we can't make it follow the pattern of `flatMap`. 
 
 Let's try a different way, if it is not possible to implement a `flatMap` for `FileOps` and we can use `SpecialEffect` to make the ideal `flatMap` pure, how about put the `FileOps` in `SpecialEffect`? then we can get a `flatMap` for `SpecialEffect` which contains all the information of `FileOps`. Let's implement a function to do this
 
@@ -190,7 +190,7 @@ Then the `lift` can be implemented like this
 def lift[A](v:FileOps[A]):SpecialEffect[A] = FlatMap(v, x => Pure(x))
 ```
 
-Cool, we wrapped the `FileOps` with `SpecialEffect` without changeing it, let's see the `flatMap` and `interpreter`
+Cool, we wrapped the `FileOps` with `SpecialEffect` without changeing it, let's see the `flatMap` and `specialInterpreter` now.
 
 ```scala
 def flatMap[B](v:SpecialEffect[A])(f:A=>SpecialEffect[B]):SpecialEffect[B] = v match {
@@ -198,9 +198,9 @@ def flatMap[B](v:SpecialEffect[A])(f:A=>SpecialEffect[B]):SpecialEffect[B] = v m
   case FlatMap(v1, f1) => FlatMap(v1, x => flatMap(f1(x))(f))
 }
 
-def interpreter[A](v:SpecialEffect[A]):A = v match {
+def specialInterpreter[A](v:SpecialEffect[A]):A = v match {
   case Pure(v1) => v1
-  case FlatMap(v1,f1) => interpreter(f1(fileOpsInterpreter(v1)))
+  case FlatMap(v1,f1) => specialInterpreter(f1(fileOpsInterpreter(v1)))
 }
 ```
 
@@ -208,7 +208,7 @@ Then the `saveCSVFiles` can be refined like this
 
 ```scala
 def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):Boolean = {
-  interpreter(
+  specialInterpreter(
     flatMap(lift(saveDataToCSV("data1.csv",file1Content)))(
     _ => flatMap(lift(saveDataToCSV("data2.csv",file2Content)))(
       _ => lift(saveDataToCSV("data3.csv",file3Content))
@@ -225,7 +225,7 @@ else
    false
 ```
 
-Is there any other effect has this feature which break the process if there are some errors? Yeah, we have Option, Either, IO, etc. Let's try to refine the `fileOpsInterpreter`, `interpreter` and `saveCSVFiles`
+Is there any other effect has this similar feature which break the process if there are some errors? Yeah, we have Option, Either, IO, etc. Let's try to refine the `fileOpsInterpreter`, `specialInterpreter` and `saveCSVFiles`
 
 ```scala
 def fileOpsInterpreter[A](v:FileOps[A]):Option[A] = v match {
@@ -241,7 +241,7 @@ def fileOpsInterpreter[A](v:FileOps[A]):Option[A] = v match {
   }
 } 
 
-def interpreter[A](v:SpecialEffect[A]):Option[A] = v match {
+def specialInterpreter[A](v:SpecialEffect[A]):Option[A] = v match {
   case Pure(v1) => Some(v1)
   case FlatMap(v1,f1) => 
     fileOpsInterpreter(v1).flatMap(x=>interpreter(f1(x)))
@@ -256,34 +256,80 @@ def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):
 }
 ```
 
-Awesome! everything looks good, we minimize the scope of Side-Effect code. now only `fileOpsInterpreter` has Side-Effect, other code can use pure way to work.
+Awesome! the if-else logic is implemented in  `fileOpsInterpreter(v1).flatMap`(it's the `flatMap` of Option).  
 
-Actually we can control the program logic by using different return type of `fileOpsInterpreter`, for example, we can carry the error message by returning Either. the only restriction is the return type should be a Monad. Let's make `interpreter` more generic.
+Everything looks good, we minimize the scope of Side-Effect code. now only `fileOpsInterpreter` has Side-Effect, other code can use pure way to work.
+
+Actually we can control the program logic by using different return type of `fileOpsInterpreter`, for example, we can carry the error message by returning Either. the only restriction is the return type should be a Monad. Let's make `specialInterpreter` more generic.
 
 ```scala
-def interpreter[A,M](v:SpecialEffect[A],f:FileOps~>M):M[A] = v match {
+def specialInterpreter[A,M:Monad](v:SpecialEffect[A],f:FileOps~>M):M[A] = v match {
   case Pure(v1) => M.pure(v1)
   case FlatMap(v1,f1) => 
     f(v1).flatMap(x=>interpreter(f1(x)))
 }
 ```
 
-Maybe you already know the next step, we can make `SpecialEffect` more generic to support any effect
+Maybe you already know the next step, we can also remove the  `FileOps` to make `SpecialEffect` more generic to support any effect
 
 ```scala
-sealed trait SpecialEffect[A]
-case class Pure[A](v:A) extends SpecialEffect[A]
-case class FlatMap[A, B](v:FileOps[A], f: A=>SpecialEffect[B]) extends SpecialEffect[B]
-def interpreter[A,M](v:SpecialEffect[A],f:FileOps~>M):M[A] = v match {
+sealed trait SpecialEffect[F[_], A]
+case class Pure[F[_], A](v:A) extends SpecialEffect[F, A]
+case class FlatMap[F[_], A, B](v:F[A], f: A=>SpecialEffect[F, B]) extends SpecialEffect[F, B]
+def lift[F[_], A](v:F[A]):SpecialEffect[F, A] = FlatMap(v, x => Pure(x))
+def specialInterpreter[A,M:Monad](v:SpecialEffect[A],f:F~>M):M[A] = v match {
   case Pure(v1) => M.pure(v1)
   case FlatMap(v1,f1) => 
     f(v1).flatMap(x=>interpreter(f1(x)))
 }
 ```
 
+With this `SpecialEffect` and a given mapping from effect to monad , all effect can do the functional programming without worrying about the Monad. Usually we call this `SpecialEffect` as `FreeMonad`. 
+
+Finally, I think the sentence in cats document is very useful for functional programmer.
+
+> The whole purpose of functional programming isn’t to prevent side-effects, it is just to push side-effects to the boundaries of your system in a well-known and controlled way. [^4]
 
 
 
+# The type of Effect
+
+According to the previous section, we know there are at least two metrics can be used to evaluate effect.
+
+* Pure/Non-Pure - depend on if its interpreter is pure function
+
+* Total/Partial - depend on if it can describe all the logic in the `map`/`flatMap`.
+
+   For example, FileOps is a Partial effect, it can not describe the logic when SaveFile fail.
+
+For Non-Pure or Partial effect, we have two ways to make it work in pure way
+
+* Don't use this effect, implement it using function which return Pure and Total effect
+
+  For `FileOps`, we can create two function which return IO monad to stand for the file operations
+
+  ```scala
+  def getConfiguration:IO[String] = IO(Source.fromFile(path).mkString)
+  def saveDataToCSV(name:String, content:String):IO[Unit] = 
+   IO(
+      val file = new File(path)
+      val bw = new BufferedWriter(new FileWriter(file))
+      bw.write(content)
+      bw.close()
+   )
+  ```
+
+  The problem of this way are
+
+  * How to group these function in efficient way, Object or Class  ? 
+  * How to mock them in unit test, pass them as parameter?
+
+* Use `Free Moand` to help it.
+
+  The problem of this way are
+
+  * We need more code than the first option and it's harder to understand.
+  * How to compose two effect?
 
 # References
 
