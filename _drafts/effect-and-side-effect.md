@@ -216,7 +216,72 @@ def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):
 }
 ```
 
-Ok the only thing is implement the if-else logic
+The only left thing is how to implement the if-else logic in `SpecialEffect`
+
+```scala
+if (fileOpsInterpreter(saveDataToCSV(???,???)))
+   fileOpsInterpreter(saveDataToCSV(???,???))
+else
+   false
+```
+
+Is there any other effect has this feature which break the process if there are some errors? Yeah, we have Option, Either, IO, etc. Let's try to refine the `fileOpsInterpreter`, `interpreter` and `saveCSVFiles`
+
+```scala
+def fileOpsInterpreter[A](v:FileOps[A]):Option[A] = v match {
+  case ReadFile(path) => Some(Source.fromFile(path).mkString)
+  case SaveFile(path, content) => try {
+    val file = new File(path)
+    val bw = new BufferedWriter(new FileWriter(file))
+    bw.write(content)
+    bw.close()
+    Some(true)
+  } catch {
+    case e => None
+  }
+} 
+
+def interpreter[A](v:SpecialEffect[A]):Option[A] = v match {
+  case Pure(v1) => Some(v1)
+  case FlatMap(v1,f1) => 
+    fileOpsInterpreter(v1).flatMap(x=>interpreter(f1(x)))
+}
+
+def saveCSVFiles(file1Content:String, file2Content:String, file3Content:String):Boolean = {
+  interpreter(
+    flatMap(lift(saveDataToCSV("data1.csv",file1Content)))(
+    _ => flatMap(lift(saveDataToCSV("data2.csv",file2Content)))(
+      _ => lift(saveDataToCSV("data3.csv",file3Content))
+    ))).fold(false,identity)
+}
+```
+
+Awesome! everything looks good, we minimize the scope of Side-Effect code. now only `fileOpsInterpreter` has Side-Effect, other code can use pure way to work.
+
+Actually we can control the program logic by using different return type of `fileOpsInterpreter`, for example, we can carry the error message by returning Either. the only restriction is the return type should be a Monad. Let's make `interpreter` more generic.
+
+```scala
+def interpreter[A,M](v:SpecialEffect[A],f:FileOps~>M):M[A] = v match {
+  case Pure(v1) => M.pure(v1)
+  case FlatMap(v1,f1) => 
+    f(v1).flatMap(x=>interpreter(f1(x)))
+}
+```
+
+Maybe you already know the next step, we can make `SpecialEffect` more generic to support any effect
+
+```scala
+sealed trait SpecialEffect[A]
+case class Pure[A](v:A) extends SpecialEffect[A]
+case class FlatMap[A, B](v:FileOps[A], f: A=>SpecialEffect[B]) extends SpecialEffect[B]
+def interpreter[A,M](v:SpecialEffect[A],f:FileOps~>M):M[A] = v match {
+  case Pure(v1) => M.pure(v1)
+  case FlatMap(v1,f1) => 
+    f(v1).flatMap(x=>interpreter(f1(x)))
+}
+```
+
+
 
 
 
