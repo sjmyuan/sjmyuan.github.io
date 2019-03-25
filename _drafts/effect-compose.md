@@ -71,6 +71,36 @@ val result:Either[String, Double] = divResult.flatMap(y => {
 ```
 
 ## The second scenario
+```scala
+sealed trait Rocket[A]
+case object CheckFuel extends Rocket[Boolean]
+case class Launch(target:(Double, Double)) extends Rocket[Boolean]
+def rocketInterpreter[A](rocket:Rocket[A]):ID[A] = rocket match {
+  case CheckFuel => "Fuel is ready"
+  case Launch(target) => "Rocket has been launched, target is ${target}"
+}
+
+type RocketFree[A] = Free[Rocket, A]
+
+sealed trait Gun[A]
+case object CheckBullet extends Rocket[Boolean]
+case class Fire(target:(Double, Double)) extends Gun[Boolean]
+def gunInterpreter[A](gun:Gun[A]):ID[A] = gun match {
+  case CheckBullet => "Bullet is ready"
+  case Fire(target) => "Gun has been fired, target is ${target}"
+}
+
+type GunFree[A] = Free[Gun, A]
+```
+
+Steps:
+* CheckBullet
+* CheckBullet
+* Fire
+* Launch
+
+```scala
+```
 
 # Solutions
 
