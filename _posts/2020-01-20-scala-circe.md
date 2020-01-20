@@ -118,9 +118,9 @@ Say we have a raw JSON string like this
 
 ```json
 {
-  "id": "1100101010101"
+  "id": "1100101010101",
   "person": {
-    "name": "Job"
+    "name": "Job",
     "age": 18
   }
 }
