@@ -1,11 +1,11 @@
 ---
 title: Free Monad
 tags:
-  - Scala
+- Scala
 categories:
-  - Scala Tutorial
+- Scala Tutorial
+date: 2020-02-21 17:18 +0800
 ---
-
 When we talk about Free Monad, almost everyone just tell us Free Monad can split the definition and implementation of program which is more flexible and easy to test.
 But this is just the result of using Free Monad, no one tell us why we need it and how it was created.
 
@@ -56,7 +56,7 @@ def copy(from:String, to:String):FileOps[Boolean] = {
 ```
 But there are two problems here:
 
-* We don't know the content of `SaveFile`.
+* We don't know the `content` of `SaveFile`.
 
   In the non-pure `copy`, we got the content from the return value of `Source.fromFile`, but this is a function with `Side-Effect`, we replace it with `ReadFile` effect.
   The `ReadFile` effect is just a message to the outside of function and won't do the real io work, so we can't get the file content from it.
@@ -69,6 +69,8 @@ But there are two problems here:
 
 Now we know our ADT can't make the `copy` function pure, we need the ADT represent not only multiple effects, but also the order of effects. 
 
+What should we do?
+
 # Solution
 
 Obviously the simplest way to represent ordered elements is to use Array like model
@@ -78,7 +80,7 @@ case class OrderedEffect[A, B](effect1:FileOps[A], effect2:FileOps[B]) extends F
 ```
 
 But `effect1` and `effect2` are not independent, `effect2` may use the return value of `effect1`.
-To represent the dependent relationship, we can define `effect2` always depends on `effect1`, and use a call back function to represent it.
+To represent the dependent relationship, we can define `effect2` always depends on `effect1`, and use a callback function to represent it.
 
 ```scala
 case class OrderedEffect[A, B](effect1:FileOps[A], effect2Callback: A => FileOps[B]) extends FileOps[B]
@@ -90,7 +92,7 @@ This effect has two meanings:
 
 * When we evaluate this effect, we need to evaluate `effect1` first, then pass the return value to `effect2Callback` function, and evaluate the returned `effect2`
 
-> Here we use `evaluate effect` to mean run the non-pure operations represented by the effect. 
+> `evaluate effect` means running the non-pure operations represented by the effect. 
 
 Then our ADT becomes
 
@@ -162,18 +164,24 @@ But We got a problem in `map`, we don't know which effect should be returned whe
 
 * For `ReadFile`,
   * Could we return `ReadFile` again?
+
     No, we can't read a file twice, it will fall into the dead loop, we will read file for ever.
+
   * Could we return `SaveFile`?
-    No, we don't know where to save the file and we even don't what's the real type of `B` which may be not a `String`.
+
+    No, we don't know where to save the file and we even don't know what's the real type of `B` which may be not a `String`.
 
 * For `SaveFile`
   * Could we return `ReadFile`?
-    No, which file should we read?
-  * Could we return `SaveFile` again?
-    No, we can't save a file twice, it will fall into the dead loop, we will save a file for ever.
 
-Seems the only solution is to return `OrderedEffect`, but `f: A => B` is a pure function, can't pass it to `f: A => FileOps[B]`.
-But if we can convert `B` to `FileOps[B]`, it may work.
+    No, which file should we read?
+
+  * Could we return `SaveFile` again?
+
+    No, we can't save a file twice, it will fall into the dead loop, we will save file for ever.
+
+Seems the only solution is to return `OrderedEffect`, but `f: A => B` is a inborn pure function, can't be passed to `f: A => FileOps[B]`.
+If we can convert `B` to `FileOps[B]`, it may work.
 
 Let's add an effect like `Some` to our ADT
 
@@ -285,11 +293,11 @@ def div(x: Double, y: Double): Double = {
 } 
 ```
 
-According to the previous section, we may define our ADT like this
+According to the previous section, we may define the ADT like this
 
 ```scala
 trait Response[+A]
-case class Success[+A](v: A) extends Response[A]
+case class Success[A](v: A) extends Response[A]
 case class Error(message: String) extends Response[Nothing]
 case class Log(message: String) extends Response[Unit]
 case class ResponseOrderedEffect[A, B](effect1: Response[A], effect2Callback: A => Response[B]) extends Response[B]
@@ -362,8 +370,8 @@ case class OrderedEffect[F[_], A, B](fa: F[A], f: A => F[B]) extends EffectRelat
 case class NoEffect[F[_], A](a: A) extends EffectRelation[F, A]
 ```
 
-Here we just use `F[_]` to replace the initial ADT, but there is a restriction on `f: A => F[B]`.
-The returned type `F[_]` cannot represent the ordered effects, which will make the implementation of `f` painful.
+Here we just use `F[_]` to replace the initial ADT.
+But there is a restriction on `f: A => F[B]`, the returned type `F[_]` cannot represent the ordered effects, which will make the implementation of `f` painful.
 
 So let's do a minor change, change `f: A => F[B]` to `f: A => EffectRelation[F, B]`, then `f` will be more flexible.
 
@@ -396,7 +404,7 @@ What's the type of this function? Here we need to use the [Type lambdas](https:/
 ({ type T[A] = F[A] => A })#T
 ```
 
-Then then the `run` becomes
+Then the `run` becomes
 
 
 ```scala
@@ -446,7 +454,7 @@ def runFileOps[A](fa: FileOps[A]): A = fa match {
 }
 ```
 
-To use `EffectRelation` to represent the ordered `FileOps`, we need to convert the `FileOps` to `EffectRelation`.
+To represent the ordered `FileOps`, we need to convert the `FileOps` to `EffectRelation`.
 
 ```scala
 type FileOpsEffectRelation[A] = EffectRelation[FileOps, A]
@@ -498,7 +506,7 @@ But this function can't compile now,
 * If `f1` requires `C`, `runF` returns `G[C]` which is not matched. 
 * `v` is `A` which does not match `G[A]`
 
-To make the code work, `G[_]` need to be a monad here.
+To make the code work, `G[_]` need to be a Monad here.
 
 ```scala
 def run[F[_], G[_]: Monad, A](fa: EffectRelation[A], runF: ({ type T[C] = F[C] => G[C] })#T): G[A] = fa match {
@@ -515,7 +523,7 @@ Actually this function still support `runF` with type
 ({ type T[A] = F[A] => A })#T
 ```
 
-Because we can give `A` an alias `Id[A]` to change its kind to `G[_]` and it's a inborn monad.
+Because we can give `A` an alias `Id[A]` to change its kind to `G[_]` and it's a inborn Monad.
 
 ```scala
 type Id[A] = A 
@@ -544,7 +552,7 @@ Now let's do a simple rename work
 * `OrderedEffect` => `Impure` 
 * `NoEffect` => `Pure` 
 
-Then we can get the definition of `Free` monad
+Then we can get the definition of `Free` Monad
 
 ```scala
 trait Free[F[_], A]
@@ -571,8 +579,8 @@ def flatMap[F[_], A, B](fa:Free[F[_], A])(f: A => Free[F[_],B]): Free[F[_], B] =
 }
 ```
 
-Here we don't have any restriction for `F[_]` which mean it can not be a functor or monad. What if we require it's a functor?
-We found we can make `Impure` simpler, because we can apply `f` directly to `fa` with `map`, then the type will be `F[Free[F, B]]` and `Free` monad become
+Here we don't have any restriction for `F[_]` which mean it may not be a Functor or Monad. What if we require it's a Functor?
+We found we can make `Impure` simpler, because we can apply `f` directly to `fa` with `map`, then the type will be `F[Free[F, B]]` and `Free` Monad become
 
 ```scala
 trait Free[F[_], A]
@@ -606,30 +614,30 @@ def flatMap[F[_]:Functor, A, B](fa:Free[F[_], A])(f: A => Free[F[_],B]): Free[F[
 Returning ordered effects is a common requirement when making a function pure, so we extract an ADT `EffectRelation` to help one ADT to achieve this.
 The definition of `EffectRelation` can be different depend on the restriction of target ADT.
 
-* For the ADT with no restriction, we call the implementation `Freer` monad
+* For the ADT with no restriction, we call the implementation `Freer` Monad
   ```scala
   trait Free[F[_], A]
   case class Impure[F[_], A, B](fa: F[A], f: A => Free[F, B]) extends Free[F, B]
   case class Pure[F[_], A](a: A) extends Free[F, A]
   ```
 
-* For the ADT with functor requirement, we call the implementation `Free` monad
+* For the ADT with Functor requirement, we call the implementation `Free` Monad
   ```scala
   trait Free[F[_], A]
   case class Impure[F[_], A](fa: F[Free[F, A]]) extends Free[F, A]
   case class Pure[F[_], A](a: A) extends Free[F, A]
   ```
 
-Cats implement the `Freer` monad, but they call it `Free`, we will follow this convention.
+Cats implement the `Freer` Monad, but they call it `Free`, we will follow this convention.
 
-With Free Monad, we can convert any ADT to monad by wrapping them in `Free`.
+With Free Monad, we can convert any ADT to Monad by wrapping them in `Free`.
 This feature is a game changer, previously we create ADT according to the implementation of function, now we can create ADT at will, then use the ADT to compose function.
 
 Also with the callback function `runF`, it's possible to pass different `runF` to the same evaluation of ADT, which mean we split the definition and implementation of program.
 This is very useful in test, we can pass the `runF` with real io in `main` but pass the `runF` with mock data in test.
 
 Our implementation of `Free` is simple, we didn't consider performance and stack overflow.
-To avoid the stack overflow, we need to ensure `map`, `flatMap` and `run` are tail recursion which need the technical called [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing))
+To avoid the stack overflow, we need to ensure `map`, `flatMap` and `run` are tail recursion which need the technique called [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing))
 
 You may also find there are some places in which we used `Any` type, for example
 
@@ -649,8 +657,8 @@ case class OrderedEffect[A, B](effect1:EffectRelation,[A], effect2Callback: A =>
 
 But using `Any` is still type safe here, because we have strong type restriction when constructing `OrderedEffect`
 
-Free monad is powerful, but it also has limitation. We can not use Free monad with multiple ADT at one time,
-which mean we need to unify the type of different ADT and merge the `runF`, then can use Free monad.
-There are some techniques can help us do this, such as [Eff](https://github.com/atnos-org/eff).
+Free Monad is powerful, but it also has limitation. We can not use Free Monad with multiple independent ADT together.
+if we want to use them together, we need to unify their types and merge their `runF` first.
+There are some techniques can help us do this, such as [Eff](https://github.com/atnos-org/eff), EitherK.
 
-Hope this blog can help you understand Free monad, have fun in the sea of FP!
+Hope this blog can help you understand Free Monad, have fun in the sea of FP!
