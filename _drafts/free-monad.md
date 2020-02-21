@@ -641,3 +641,16 @@ def map[F[_], A, B](fa:EffectRelation[F[_], A])(f: A => B): EffectRelation[F[_],
 }
 ```
 
+The reason is `OrderedEffect` lose the return type `A` of `effect1` when we convert `OrderedEffect` to `EffectRelation`
+
+```scala
+case class OrderedEffect[A, B](effect1:EffectRelation,[A], effect2Callback: A => EffectRelation[B]) extends EffectRelation[B]
+```
+
+But using `Any` is still type safe here, because we have strong type restriction when constructing `OrderedEffect`
+
+Free monad is powerful, but it also has limitation. We can not use Free monad with multiple ADT at one time,
+which mean we need to unifiy the type of differnt ADT and merge the `runF`, then can use Free monad.
+There are some techniques can help us to do this, such as [Eff](https://github.com/atnos-org/eff).
+
+Hope this blog can help you to understand Free monad, have fun in the sea of FP!
