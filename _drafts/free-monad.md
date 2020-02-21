@@ -6,7 +6,7 @@ categories:
   - Scala Tutorial
 ---
 
-When we talk about Free Monad, almost everyone just tell us Free Monad can split the definition and implementation of program which is more flexible and easy to do test.
+When we talk about Free Monad, almost everyone just tell us Free Monad can split the definition and implementation of program which is more flexible and easy to test.
 But this is just the result of using Free Monad, no one tell us why we need it and how it was created.
 
 In this blog, we will try to find out the motivation of Free Monad in code level and infer it by ourself.
@@ -32,7 +32,7 @@ def copy(from: String, to: String): Boolean = {
 
 In [Algebraic Data Type](https://blog.shangjiaming.com/scala%20tutorial/algebraic-data-type/), we talked about how to make a function pure, let's try it on the `copy` function.
 
-The purpose of this function is to copy one file to another location. 
+This function copies one file to another location.
 According to [What is Functional Programming?](https://blog.shangjiaming.com/scala%20tutorial/what-is-fp/),There are 2 effects in this function
 
 * Read file
@@ -65,7 +65,7 @@ But there are two problems here:
 
   Not like the `div` function in [Algebraic Data Type](https://blog.shangjiaming.com/scala%20tutorial/algebraic-data-type/) which just return one effect `DivResult` or `ExceptionResult`.
   For the pure `copy` function, we expect the return type contains two effects: `ReadFile` and `SaveFile`, not only the `SaveFile`.
-  And these two effects should happens in order, we can't imagine a copy operation do save operation first, it can't save anything before read the content.
+  And these two effects should happens in order, we can't imagine a copy do save operation first, it can't save anything before read the content.
 
 Now we know our ADT can't make the `copy` function pure, we need the ADT represent not only multiple effects, but also the order of effects. 
 
@@ -236,7 +236,7 @@ def copy(from:String, to:String):FileOps[Boolean] = {
 ```
 
 Please recall the purpose of Functional Programming, we are not to remove the `Side-Effect` totally, we just want to centralize the `Side-Effect`.
-Here what we want is not just get the ADT from `copy`, we want to copy a file to another location, which mean we want the `Side-Effect` happens eventually.
+Here what we want is not just get the ADT from `copy`, we want to copy a file to another location, which mean we want the `Side-Effect` happens, eventually.
 
 So we need to evaluate the effect of ADT, the intuitional implementation looks like this
 
@@ -362,7 +362,7 @@ case class OrderedEffect[F[_], A, B](fa: F[A], f: A => F[B]) extends EffectRelat
 case class NoEffect[F[_], A](a: A) extends EffectRelation[F, A]
 ```
 
-Here we just use `F[_]` to replace the inital ADT, but there is a restriction on `f: A => F[B]`.
+Here we just use `F[_]` to replace the initial ADT, but there is a restriction on `f: A => F[B]`.
 The returned type `F[_]` cannot represent the ordered effects, which will make the implementation of `f` painful.
 
 So let's do a minor change, change `f: A => F[B]` to `f: A => EffectRelation[F, B]`, then `f` will be more flexible.
@@ -407,7 +407,7 @@ def run[F[_], A](fa: EffectRelation[A], runF: ({ type T[C] = F[C] => A })#T): A 
 }
 ```
 
-We can also define `map` and `flatMap` for `EffectRelation` which are just parts of the implementation of `FileOps` and `Response`.
+We can also define `map` and `flatMap` for `EffectRelation` which are just parts of implementing `FileOps` and `Response`.
 
 ```scala
 def map[F[_], A, B](fa:EffectRelation[F[_], A])(f: A => B): EffectRelation[F[_], B] = fa match {
@@ -606,7 +606,7 @@ def flatMap[F[_]:Functor, A, B](fa:Free[F[_], A])(f: A => Free[F[_],B]): Free[F[
 Returning ordered effects is a common requirement when making a function pure, so we extract an ADT `EffectRelation` to help one ADT to achieve this.
 The definition of `EffectRelation` can be different depend on the restriction of target ADT.
 
-* For the ADT without any restriction, we call the implementation `Freer` monad
+* For the ADT with no restriction, we call the implementation `Freer` monad
   ```scala
   trait Free[F[_], A]
   case class Impure[F[_], A, B](fa: F[A], f: A => Free[F, B]) extends Free[F, B]
@@ -620,10 +620,10 @@ The definition of `EffectRelation` can be different depend on the restriction of
   case class Pure[F[_], A](a: A) extends Free[F, A]
   ```
 
-Actually, cats implement the `Freer` monad, but they call it `Free`, we will follow this convention.
+Cats implement the `Freer` monad, but they call it `Free`, we will follow this convention.
 
 With Free Monad, we can convert any ADT to monad by wrapping them in `Free`.
-This feature is a game changor, previously we create ADT according to the implementation of function, now we can create ADT at will, then use the ADT to compose function.
+This feature is a game changer, previously we create ADT according to the implementation of function, now we can create ADT at will, then use the ADT to compose function.
 
 Also with the callback function `runF`, it's possible to pass different `runF` to the same evaluation of ADT, which mean we split the definition and implementation of program.
 This is very useful in test, we can pass the `runF` with real io in `main` but pass the `runF` with mock data in test.
@@ -650,7 +650,7 @@ case class OrderedEffect[A, B](effect1:EffectRelation,[A], effect2Callback: A =>
 But using `Any` is still type safe here, because we have strong type restriction when constructing `OrderedEffect`
 
 Free monad is powerful, but it also has limitation. We can not use Free monad with multiple ADT at one time,
-which mean we need to unifiy the type of differnt ADT and merge the `runF`, then can use Free monad.
-There are some techniques can help us to do this, such as [Eff](https://github.com/atnos-org/eff).
+which mean we need to unify the type of different ADT and merge the `runF`, then can use Free monad.
+There are some techniques can help us do this, such as [Eff](https://github.com/atnos-org/eff).
 
-Hope this blog can help you to understand Free monad, have fun in the sea of FP!
+Hope this blog can help you understand Free monad, have fun in the sea of FP!
