@@ -6,42 +6,47 @@ categories:
   - Scala Tutorial
 ---
 
-When we talk about Free Monad, almost everyone just tell us it can split the definition and implementation of program, and easy to do test.
-But this is just the resut of using Free Monad, no one tell us why we need it and how it was created.
+When we talk about Free Monad, almost everyone just tell us Free Monad can split the definition and implementation of program which is more flexible and easy to do test.
+But this is just the result of using Free Monad, no one tell us why we need it and how it was created.
 
-In this blog, we will try to find out the motivation of Free Monad from code level and infer it by ourself.
+In this blog, we will try to find out the motivation of Free Monad in code level and infer it by ourself.
 
 # Question
 
 Let's begin with a simple question, how do you make this function pure?
 
 ```scala
-def copy(from:String, to:String):Unit = {
-  val content = Source.fromFile(from).mkString
-  val file = new File(to)
-  val bw = new BufferedWriter(new FileWriter(file))
-  bw.write(content)
-  bw.close()
+def copy(from: String, to: String): Boolean = {
+  try {
+    val content = Source.fromFile(from).mkString
+    val file = new File(to)
+    val bw = new BufferedWriter(new FileWriter(file))
+    bw.write(content)
+    bw.close()
+    true
+  } catch {
+   case _ => false
+  }
 }
 ```
 
-In [Algebraic Data Type](https://blog.shangjiaming.com/scala%20tutorial/algebraic-data-type/), we talk about how to make a function pure, let's try it on the `copy` function.
+In [Algebraic Data Type](https://blog.shangjiaming.com/scala%20tutorial/algebraic-data-type/), we talked about how to make a function pure, let's try it on the `copy` function.
 
 The purpose of this function is to copy one file to another location. 
-According to [What is Functional Programming?](https://blog.shangjiaming.com/scala%20tutorial/what-is-fp/),There are 2 effect in this function
+According to [What is Functional Programming?](https://blog.shangjiaming.com/scala%20tutorial/what-is-fp/),There are 2 effects in this function
 
 * Read file
 * Write file
 
 So we can define an ADT like this
 
-```
+```scala
 sealed trait FileOps[A]
 case class ReadFile(path:String) extends FileOps[String]
 case class SaveFile(path:String, content:String) extends FileOps[Boolean]
 ```
 
-Then the `copy` can be refined to be pure by the ADT
+Then the `copy` function can be refined by the ADT
 
 ```scala
 def copy(from:String, to:String):FileOps[Boolean] = {
@@ -49,7 +54,7 @@ def copy(from:String, to:String):FileOps[Boolean] = {
   SaveFile(to, ???)
 }
 ```
-There are two problems here:
+But there are two problems here:
 
 * We don't know the content of `SaveFile`.
 
@@ -58,11 +63,11 @@ There are two problems here:
 
 * The `ReadFile` effect is ignored by the return expression.
 
-  Not like the function in [Algebraic Data Type](https://blog.shangjiaming.com/scala%20tutorial/algebraic-data-type/) which just return A effect or B effect and won't return them together.
-  For pure `copy` function, we expect the return type contains two effects: `ReadFile` and `SaveFile`, not only the `SaveFile`
+  Not like the `div` function in [Algebraic Data Type](https://blog.shangjiaming.com/scala%20tutorial/algebraic-data-type/) which just return one effect `DivResult` or `ExceptionResult`.
+  For the pure `copy` function, we expect the return type contains two effects: `ReadFile` and `SaveFile`, not only the `SaveFile`.
   And these two effects should happens in order, we can't imagine a copy operation do save operation first, it can't save anything before read the content.
 
-According to these problems, we know our ADT can't make the `copy` function pure, we need the ADT not only represent multiple effects, but also the order of effects. 
+Now we know our ADT can't make the `copy` function pure, we need the ADT represent not only multiple effects, but also the order of effects. 
 
 # Solution
 
@@ -73,38 +78,38 @@ case class OrderedEffect[A, B](effect1:FileOps[A], effect2:FileOps[B]) extends F
 ```
 
 But `effect1` and `effect2` are not independent, `effect2` may use the return value of `effect1`.
-To represent the dependent relationship, we can define `effect2` always depends on `effect1`, then we can use a call back function to represent it.
+To represent the dependent relationship, we can define `effect2` always depends on `effect1`, and use a call back function to represent it.
 
 ```scala
 case class OrderedEffect[A, B](effect1:FileOps[A], effect2Callback: A => FileOps[B]) extends FileOps[B]
 ```
 
-This effect have two meanings:
+This effect has two meanings:
 
-* The evaluated value of this effect is B which can be a primitive data or the return value of non-pure operations represented by this effect.
+* The evaluated value of this effect is `B` which can be a primitive data or the return value of non-pure operations represented by this effect.
 
-* When we evaluate this effect, we need to evaluate `effect1` first, then pass the return value to `effect2Callback` function, then evaluate the returned `effect2`
+* When we evaluate this effect, we need to evaluate `effect1` first, then pass the return value to `effect2Callback` function, and evaluate the returned `effect2`
 
-Here we use `evaluate effect` to mean run the non-pure operations represented by the effect. 
+> Here we use `evaluate effect` to mean run the non-pure operations represented by the effect. 
 
-Then our ADT becomes this
+Then our ADT becomes
 
-```
+```scala
 sealed trait FileOps[A]
 case class ReadFile(path:String) extends FileOps[String]
 case class SaveFile(path:String, content:String) extends FileOps[Boolean]
 case class OrderedEffect[A, B](effect1:FileOps[A], effect2Callback: A => FileOps[B]) extends FileOps[B]
 ```
 
-The `copy` function can be made pure like this
+And the `copy` function can be pure now
 
 ```scala
-def copy(from:String, to:String):FileOps[Boolean] = {
+def copy(from: String, to: String): FileOps[Boolean] = {
   OrderedEffect[String, Boolean](ReadFile(from), (content:String) => SaveFile(to, content))
 }
 ```
 
-Looks all good for now, but according to [Monad](https://blog.shangjiaming.com/scala%20tutorial/scala-monad/), our ADT need `map` and `flatMap` to remove duplication.
+Looks all good for now, but according to [Monad](https://blog.shangjiaming.com/scala%20tutorial/scala-monad/), our ADT need to implement `map` and `flatMap` to remove duplication.
 
 Let's try
 
@@ -124,7 +129,7 @@ def flatMap[A, B](fa: FileOps[A])(f: A => FileOps[B]): FileOps[B] = fa match {
       f(false)
   }
   case OrderedEffect(effect1, f1) =>
-    flatMap(flatMap(effect1)(f1))(f)
+    OrderedEffect(effect1, (x: Any) => flatMap(f1(x))(f))
 }
 ```
 
@@ -147,28 +152,32 @@ def map[A, B](fa: FileOps[A])(f: A => B): FileOps[B] = fa match {
       ???
   }
   case OrderedEffect(effect1, f1) => 
-    OrderedEffect(effect1, (x:A) => map(f1(x))(f))
+    OrderedEffect(effect1, (x:Any) => map(f1(x))(f))
 }
 ```
 
-Except for `Side-Effect`, `flatMap` looks good, we can give a definite implementation. 
+Except for `Side-Effect`, `flatMap` looks good, we can give it a definite implementation. 
 
-We got a problem in `map`, we don't know which effect should be returned when processing `ReadFile` and `SaveFile`.
+But We got a problem in `map`, we don't know which effect should be returned when processing `ReadFile` and `SaveFile`.
 
 * For `ReadFile`,
-  * Could we return `ReadFile` again? No, we can't read a file twice, it will fall in the dead loop, we will read file for ever.
-  * Could we return `SaveFile`? No, we don't know where to save and we even don't what's the real type of `B`.
+  * Could we return `ReadFile` again?
+    No, we can't read a file twice, it will fall into the dead loop, we will read file for ever.
+  * Could we return `SaveFile`?
+    No, we don't know where to save the file and we even don't what's the real type of `B` which may be not a `String`.
 
 * For `SaveFile`
-  * Could we return `ReadFile`? No, which file should we read?
-  * Could we return `SaveFile` again? No, we can't save a file twice, it will fall in the dead loop, we will save a file for ever.
+  * Could we return `ReadFile`?
+    No, which file should we read?
+  * Could we return `SaveFile` again?
+    No, we can't save a file twice, it will fall into the dead loop, we will save a file for ever.
 
-Seems the only solution is to return `OrderedEffect`, but `f: A => B` is a pure function, can't pass to parameter with type `f: A => FileOps[B]`.
-If we can convert `B` to `FileOps[B]`, it may work.
+Seems the only solution is to return `OrderedEffect`, but `f: A => B` is a pure function, can't pass it to `f: A => FileOps[B]`.
+But if we can convert `B` to `FileOps[B]`, it may work.
 
 Let's add an effect like `Some` to our ADT
 
-```
+```scala
 case class NoEffect[A](v: A) extends FileOps[A]
 ```
 
@@ -227,7 +236,7 @@ def copy(from:String, to:String):FileOps[Boolean] = {
 ```
 
 Please recall the purpose of Functional Programming, we are not to remove the `Side-Effect` totally, we just want to centralize the `Side-Effect`.
-Here what we want is not get an ADT for `copy`, we want to copy a file to another location, which mean we want the `Side-Effect` happens eventually.
+Here what we want is not just get the ADT from `copy`, we want to copy a file to another location, which mean we want the `Side-Effect` happens eventually.
 
 So we need to evaluate the effect of ADT, the intuitional implementation looks like this
 
@@ -263,10 +272,10 @@ def main(args: Array[String]):Unit = {
 
 # Refactor
 
-Assume we also want to make this function pure
+Assume we also want to make this `div` function pure
 
 ```scala
-def div(x:Double, y:Double): Double = {
+def div(x: Double, y: Double): Double = {
   if(y == 0){
    println(s"/ by zero")
    throw new Exception("/ by zero")
@@ -339,11 +348,11 @@ def run[A](fa: Response[A]): A = fa match {
 }
 ```
 
-We found both the `Response` ADT and `FileOps` ADT have the effect `NoEffect` and `OrderedEffect`.
+We found both the `Response` ADT and `FileOps` ADT have `NoEffect` and `OrderedEffect`.
 And the behavior of these two effects in `map`, `flatMap` and `run` are same.
 Could we remove the duplication?
 
-In terms of the usage of `OrderedEffect`, it can be used on any effect to represent the effect order, so we may create an special ADT to extract this part.
+In terms of the usage of `OrderedEffect`, it can be used on any effect to represent the ordered effects, so we may create an special ADT to extract this part.
 
 The intuitional implementation is
 
@@ -354,7 +363,7 @@ case class NoEffect[F[_], A](a: A) extends EffectRelation[F, A]
 ```
 
 Here we just use `F[_]` to replace the inital ADT, but there is a restriction on `f: A => F[B]`.
-The `f` return `F[_]` which cannot represent the order of effect, then the implementation of `f` will be very painful.
+The returned type `F[_]` cannot represent the ordered effects, which will make the implementation of `f` painful.
 
 So let's do a minor change, change `f: A => F[B]` to `f: A => EffectRelation[F, B]`, then `f` will be more flexible.
 
@@ -364,7 +373,7 @@ case class OrderedEffect[F[_], A, B](fa: F[A], f: A => EffectRelation[F, B]) ext
 case class NoEffect[F[_], A](a: A) extends EffectRelation[F, A]
 ```
 
-Because we don't know the exact type of `F`, we need a callback function to help us evaluate the `EffectRelation`, it may looks like this
+Because we don't know the exact type of `F`, we need a callback function to help us to evaluate the `EffectRelation`, it may looks like this
 
 ```scala
 def run[F[_], A](fa: EffectRelation[A], runF: F[A] => A): A = fa match {
@@ -393,12 +402,12 @@ Then then the `run` becomes
 ```scala
 def run[F[_], A](fa: EffectRelation[A], runF: ({ type T[C] = F[C] => A })#T): A = fa match {
   case OrderedEffect(effect1, f1) => 
-    run(f1(runF(effect1)))
+    run(f1(runF(effect1)), runF)
   case NoEffect(v) => v
 }
 ```
 
-We can also define `map` and `flatMap` for `EffectRelation` which are just parts of the `map` and `flatMap` of `FileOps` and `Response`.
+We can also define `map` and `flatMap` for `EffectRelation` which are just parts of the implementation of `FileOps` and `Response`.
 
 ```scala
 def map[F[_], A, B](fa:EffectRelation[F[_], A])(f: A => B): EffectRelation[F[_], B] = fa match {
@@ -414,7 +423,7 @@ def flatMap[F[_], A, B](fa:EffectRelation[F[_], A])(f: A => EffectRelation[F[_],
 }
 ```
 
-After extract the `EffectRelation` ADT, the `FileOps` just need to define `ReadFile` and `SaveFile` effects 
+After extract the `EffectRelation` ADT, the `FileOps` just need to define `ReadFile` and `SaveFile` effects, and supply a function to evaluate itself.
 
 ```scala
 sealed trait FileOps[A]
@@ -437,13 +446,9 @@ def runFileOps[A](fa: FileOps[A]): A = fa match {
 }
 ```
 
-To use `EffectRelation` to represent the effect order, we need to convert the `FileOps` to `EffectRelation`.
+To use `EffectRelation` to represent the ordered `FileOps`, we need to convert the `FileOps` to `EffectRelation`.
 
 ```scala
-sealed trait FileOps[A]
-case class ReadFile(path:String) extends FileOps[String]
-case class SaveFile(path:String, content:String) extends FileOps[Boolean]
-
 type FileOpsEffectRelation[A] = EffectRelation[FileOps, A]
 
 def readFile(path:String): FileOpsEffectRelation[String] = 
@@ -489,14 +494,18 @@ def run[F[_], G[_], A](fa: EffectRelation[A], runF: ({ type T[C] = F[C] => G[C] 
 }
 ```
 
-This function can't compile now, because if `f1` requires `C`, `runF` returns `G[C]` which is mismatched. To make the code work, `G[_]` need to be a monad here.
+But this function can't compile now, 
+* If `f1` requires `C`, `runF` returns `G[C]` which is not matched. 
+* `v` is `A` which does not match `G[A]`
+
+To make the code work, `G[_]` need to be a monad here.
 
 ```scala
 def run[F[_], G[_]: Monad, A](fa: EffectRelation[A], runF: ({ type T[C] = F[C] => G[C] })#T): G[A] = fa match {
   case OrderedEffect(effect1, f1) => 
-    val fa1:G[EffectRelation[A]] = runF(effect1)
-    fa1.flatMap((x:EffectRelation[A]) => run(f1(x), runF))
-  case NoEffect(v) => v
+    val fa1:G[Any] = runF(effect1)
+    fa1.flatMap((x:Any) => run(f1(x), runF))
+  case NoEffect(v) => Monad[G].pure(v) 
 }
 ```
 
@@ -518,14 +527,14 @@ We can also give the type of `runF` an alias to make it more readable
 type ~>[F[_],G[_]] = ({ type T[A] = F[A] => G[A] })#T
 ```
 
-And the `run` of `EffectRelation` becomes
+Then the `run` of `EffectRelation` becomes
 
 ```scala
 def run[F[_], G[_]: Monad, A](fa: EffectRelation[A], runF: F ~> G): G[A] = fa match {
   case OrderedEffect(effect1, f1) => 
-    val fa1:G[EffectRelation[A]] = runF(effect1)
-    fa1.flatMap((x:EffectRelation[A]) => run(f1(x), runF))
-  case NoEffect(v) => v
+    val fa1:G[Any] = runF(effect1)
+    fa1.flatMap((x:Any) => run(f1(x), runF))
+  case NoEffect(v) => Monad[G].pure(v) 
 }
 ```
 
@@ -544,9 +553,9 @@ case class Pure[F[_], A](a: A) extends Free[F, A]
 
 def run[F[_], G[_]: Monad, A](fa: Free[A], runF: F ~> G): G[A] = fa match {
   case Impure(effect1, f1) => 
-    val fa1:G[Free[A]] = runF(effect1)
-    fa1.flatMap((x:Free[A]) => run(f1(x), runF))
-  case Pure(v) => v
+    val fa1:G[Any] = runF(effect1)
+    fa1.flatMap((x:Any) => run(f1(x), runF))
+  case Pure(v) => Monad[G].pure(v)
 }
 
 def map[F[_], A, B](fa:Free[F[_], A])(f: A => B): Free[F[_], B] = fa match {
@@ -562,7 +571,7 @@ def flatMap[F[_], A, B](fa:Free[F[_], A])(f: A => Free[F[_],B]): Free[F[_], B] =
 }
 ```
 
-Here we don't have any restriction for `F[_]` which mean it can not be a functor or monad. What if we required it's a functor?
+Here we don't have any restriction for `F[_]` which mean it can not be a functor or monad. What if we require it's a functor?
 We found we can make `Impure` simpler, because we can apply `f` directly to `fa` with `map`, then the type will be `F[Free[F, B]]` and `Free` monad become
 
 ```scala
@@ -573,7 +582,7 @@ case class Pure[F[_], A](a: A) extends Free[F, A]
 def run[F[_], G[_]:Monad, A](fa: Free[A], runF: F ~> G): G[A] = fa match {
   case Impure(f1) => 
     val fa1: G[Free[F, A]] = runF(f1)
-    fa1.flatMap(x => run(x)(runF))
+    fa1.flatMap((x: Free[F, A]) => run(x, runF))
   case Pure(v) => Monad[G].pure(v)
 }
 
@@ -594,7 +603,7 @@ def flatMap[F[_]:Functor, A, B](fa:Free[F[_], A])(f: A => Free[F[_],B]): Free[F[
 
 # Summary
 
-Returning multiple effects in order is a common requirement when making a function pure, so we extract an ADT `EffectRelation` to help one ADT to achieve this.
+Returning ordered effects is a common requirement when making a function pure, so we extract an ADT `EffectRelation` to help one ADT to achieve this.
 The definition of `EffectRelation` can be different depend on the restriction of target ADT.
 
 * For the ADT without any restriction, we call the implementation `Freer` monad
@@ -604,11 +613,31 @@ The definition of `EffectRelation` can be different depend on the restriction of
   case class Pure[F[_], A](a: A) extends Free[F, A]
   ```
 
-* For the ADT without functor requirement, we call the implementation `Free` monad
+* For the ADT with functor requirement, we call the implementation `Free` monad
   ```scala
   trait Free[F[_], A]
   case class Impure[F[_], A](fa: F[Free[F, A]]) extends Free[F, A]
   case class Pure[F[_], A](a: A) extends Free[F, A]
   ```
 
-Actually, cats implement the `Freer` monad, but they call it `Free`.
+Actually, cats implement the `Freer` monad, but they call it `Free`, we will follow this convention.
+
+With Free Monad, we can convert any ADT to monad by wrapping them in `Free`.
+This feature is a game changor, previously we create ADT according to the implementation of function, now we can create ADT at will, then use the ADT to compose function.
+
+Also with the callback function `runF`, it's possible to pass different `runF` to the same evaluation of ADT, which mean we split the definition and implementation of program.
+This is very useful in test, we can pass the `runF` with real io in `main` but pass the `runF` with mock data in test.
+
+Our implementation of `Free` is simple, we didn't consider performance and stack overflow.
+To avoid the stack overflow, we need to ensure `map`, `flatMap` and `run` are tail recursion which need the technical called [Trampoline](https://en.wikipedia.org/wiki/Trampoline_(computing))
+
+You may also find there are some places in which we used `Any` type, for example
+
+```scala
+def map[F[_], A, B](fa:EffectRelation[F[_], A])(f: A => B): EffectRelation[F[_], B] = fa match {
+  case OrderedEffect(effect1, f1) =>
+    OrderedEffect(effect1, (x:Any) => map(f1(x))(f))
+  case NoEffect(v) => NoEffect(f(v))
+}
+```
+
