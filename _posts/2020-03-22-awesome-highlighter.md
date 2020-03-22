@@ -4,7 +4,7 @@ date: 2020-03-22 12:00 +0800
 ---
 ![](https://tva1.sinaimg.cn/large/00831rSTly1gd2kj5nofkj30c807sa9y.jpg)
 
-首先声明Awesome Highlighter是[Super Simple Highlighter](https://chrome.google.com/webstore/detail/super-simple-Highlighter/hhlhjgianpocpoppaiihmlpgcoehlhio)的山寨版本。
+首先声明[Awesome Highlighter](https://github.com/sjmyuan/awesome-highlighter)是[Super Simple Highlighter](https://chrome.google.com/webstore/detail/super-simple-Highlighter/hhlhjgianpocpoppaiihmlpgcoehlhio)的山寨版本。
 这里的山寨主要是指想法和部分交互行为，内部逻辑均为本人自己开发(也没处抄，Super Simple Highlighter不开源)
 
 # 动机
