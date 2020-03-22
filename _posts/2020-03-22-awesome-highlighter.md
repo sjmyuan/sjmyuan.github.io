@@ -1,7 +1,7 @@
 ---
 title: 山寨版Chrome插件- Awesome Highlighter
+date: 2020-03-22 12:00 +0800
 ---
-
 ![](https://tva1.sinaimg.cn/large/00831rSTly1gd2kj5nofkj30c807sa9y.jpg)
 
 首先声明Awesome Highlighter是[Super Simple Highlighter](https://chrome.google.com/webstore/detail/super-simple-Highlighter/hhlhjgianpocpoppaiihmlpgcoehlhio)的山寨版本。
