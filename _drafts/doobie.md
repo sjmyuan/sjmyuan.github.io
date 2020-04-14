@@ -31,8 +31,8 @@ libraryDependencies ++= Seq(
 
   // And add any of these as needed
   "org.tpolecat" %% "doobie-h2"        % "0.8.8",          // H2 driver 1.4.200 + type mappings.
-  "org.tpolecat" %% "doobie-hikari"    % "0.8.8",          // HikariCP transactor.
   "org.tpolecat" %% "doobie-postgres"  % "0.8.8",          // Postgres driver 42.2.9 + type mappings.
+  "org.tpolecat" %% "doobie-hikari"    % "0.8.8",          // HikariCP transactor.
   "org.tpolecat" %% "doobie-quill"     % "0.8.8",          // Support for Quill 3.4.10
   "org.tpolecat" %% "doobie-specs2"    % "0.8.8" % "test", // Specs2 support for typechecking statements.
   "org.tpolecat" %% "doobie-scalatest" % "0.8.8" % "test"  // ScalaTest support for typechecking statements.
@@ -43,15 +43,25 @@ libraryDependencies ++= Seq(
 
 `doobie-h2` and `doobie-postgres` are the JDBC driver, please choose them as needed
 
-`doobie-quill` can help you generate sql from your model which is more safe and easy to maintain, but you can still compose sql by raw string.
+`doobie-hikari` supply another implementation of `Transactor` which support to manage the connection pool.
+
+From version 0.7, `doobie-quill` can help you generate sql from your model which is more safe and easy to maintain, but you can still compose sql by raw string.
 
 `doobie-specs2` and `doobie-scalatest` are for test, choose them according to your test framework.
 
 # Core Concept
 
+![](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdtpn4uxfkj30un0lmgpa.jpg)
+
+![](https://tva1.sinaimg.cn/large/007S8ZIlgy1gdtpn7h95vj30qm0lcjuz.jpg)
+
+In simple terms doobie translate all the model under `java.sql` to a corresponding `Free Monad`, and use these `Free Monad` to compose program, then interpret the program to real `java.sql` as needed. 
+
 ## ConnectionIO
 
-A free monad to represent all the operations of JDBC, usually we won't be aware of this model except some return type, doobie will help us compose program using it.
+The `Free Monad` of `java.sql.Connection`, all the program of doobie will become `ConnectionIO` finally.
+
+All the `ConnectionIO` chained by `map` or `flatMap` will be run in the same transaction.
 
 ```scala
 type ConnectionIO[A] = Free[ConnectionOp, A]
@@ -101,13 +111,53 @@ val xa = Transactor.fromDriverManager[IO](
 
 ## How to run sql?
 
-We can use `sql` to construct a statement, and generate `Query0` or `Update0`, then pass it to `Transactor`, finally run the IO to get result.
+1. Use `sql` to construct a statement 
+2. Generate a `Query` or `Update`
+3. Generate `ConnectionIO`
+3. Pass `ConnectionIO` to `Transactor` to geneate `IO`
+4. Run the `IO`
 
 ```scala
 val program: ConnectionIO[Int] = sql"select 42".query[Int].unique
 val io:IO[Int] = program2.transact(xa)
 io.unsafeRunSync
 ```
+## How to run a query?
+
+* Single Column
+
+  ```scala
+  sql"select name from country"
+  .query[String]    // Query0[String]
+  .stream           // Stream[ConnectionIO, String]
+  .take(5)          // Stream[ConnectionIO, String]
+  .compile.toList   // ConnectionIO[List[String]]
+  .transact(xa)     // IO[List[String]]
+  .unsafeRunSync    // List[String]
+  ```
+
+* Multiple Column
+
+  ```scala
+  sql"select code, name, population, gnp from country"
+    .query[(String, String, Int, Option[Double])]
+    .stream
+    .take(5)
+    .quick
+    .unsafeRunSync
+  ```
+
+* Custom Model
+
+  ```scala
+  case class Country(code: String, name: String, pop: Int, gnp: Option[Double])
+  sql"select code, name, population, gnp from country"
+    .query[Country]
+    .stream
+    .take(5)
+    .quick
+    .unsafeRunSync
+  ```
 
 ## How to insert a record?
 
@@ -115,7 +165,6 @@ io.unsafeRunSync
 
 ## How to delete a record?
 
-## How to run a query?
 
 ## How to map column to model?
 
