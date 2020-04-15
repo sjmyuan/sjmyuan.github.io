@@ -76,17 +76,70 @@ final case class  PrepareStatement(a: String) extends ConnectionOp[PreparedState
 
 ## Fragment
 
-A fragment of sql statement, this is the most common type we will use.
+In Java, we use the lieral string to define sql statement and use `?` as the placeholder of parameter which can be supplied laterly. for example
 
-But we usually won't construct the type directly, it supply some StringContext to help us do it, such as `sql`, `fr`, `fr0`.
+```java
+PreparedStatement updateAge = null;
 
-```scala
-val statment = sql"select * from example_table"
+String updateString = "update table person set age = ? where name = ?";
+
+updateAge = con.prepareStatement(updateString);
+
+updateAge.setInt(1, 18);
+updateAge.setString(2, "Tom");
+
+updateAge.executeUpdate();
 ```
 
-## Query0 and Update0
+To get a completed `PreparedStatement`, we need to prepare 3 things
 
-Used to generate the `ConnectionIO`
+1. The sql template
+2. The parameter posiontion 
+3. The parameter type
+
+We don't know if the sql is correct before runing it in Java.
+
+To make it easier, doobie defined `Fragment` which can apply type level checking when we prepare the sql and we don't need to remember the parameter position and type anymore. for example
+
+```scala
+val age: Int =18
+val name: String = "Tom"
+val sql = sql"update table person set age = $age where name = $name"
+sql.update.run.unsafeRunSync
+```
+
+Here the `sql` interpolator will help us construct `Fragment` which will store the parameter information.
+
+## Query and Update
+
+In Java, we run query or update by invoking different method of `PreparedStatement`, for example
+
+```java
+
+PreparedStatement selectPerson = connection.prepareStatement("select name from person");
+
+ResultSet rs = selectPerson.executeQuery()
+
+while (rs.next()) {
+    String name = rs.getString("name");
+    System.out.println("name: " + name);
+}
+
+PreparedStatement updateAge = connection.prepareStatement("update table person set age = 18");
+selectPerson.executeUpdate()
+```
+
+We can see the process of query and update are different, so doobie supply two differnt models for them: `Query` and `Update`
+
+### Query
+
+In `Query` we can control the expected type of query result which can even let us apply more flexible checking on the number of result.
+
+* unique
+* option
+* to
+
+### Update
 
 ## Transactor
 
