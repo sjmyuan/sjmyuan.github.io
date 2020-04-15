@@ -135,15 +135,89 @@ We can see the process of query and update are different, so doobie supply two d
 
 In `Query` we can control the expected type of query result which can even let us apply more flexible checking on the number of result.
 
-* unique
-* option
-* to
+* Query.unique
+
+  Return exactly one record, will raise error when there is no or more than 1 records in `ResultSet`
+
+  ```scala
+  def getUnique[A: Read]: ResultSetIO[A] =
+    (getNext[A], next).tupled.flatMap {
+      case (Some(a), false) => FRS.delay(a)
+      case (Some(_), true)  => FRS.raiseError(UnexpectedContinuation)
+      case (None, _)        => FRS.raiseError(UnexpectedEnd)
+    }
+  ```
+* Query.option
+
+  Return 0(None) or 1(Some) record, will raise error when there are more than 1 records in `ResultSet`
+
+  ```scala
+  def getOption[A: Read]: ResultSetIO[Option[A]] =
+    (getNext[A], next).tupled.flatMap {
+      case (a @ Some(_), false) => FRS.delay(a)
+      case (Some(_), true)      => FRS.raiseError(UnexpectedContinuation)
+      case (None, _)            => FRS.delay(None)
+    }
+  ```
+
+* Query.to[F[_]]
+
+  Put all the records in `ResultSet` into `F[_]`, such as `List`
+
+* Query.nel
+
+  Put all the records in `ResultSet` into `NonEmptyList`, will raise error when there is no record.
+
+  ```scala
+  def nel[A: Read]: ResultSetIO[NonEmptyList[A]] =
+    (getNext[A], list).tupled.flatMap {
+      case (Some(a), as) => FRS.delay(NonEmptyList(a, as))
+      case (None, _)     => FRS.raiseError(UnexpectedEnd)
+    }
+  ```
+
+* Query.stream
+
+  Put all the records in `ResultSet` into `fs2.Stream`
 
 ### Update
 
+`Update` is simpler than `Query`, we just need to invoke `Update.run` to execute the update
+
+### Data Mapping
+
+You may be already aware of this part, no matter what we do by `Query` and `Update`, we always need to consider
+
+1. How to convert the Scala data type to Database data type
+2. How to convert the Database data type to Scala data type
+
+And for high level program, we also need to consider
+
+1. How to convert the Scala data model to Database record
+2. How to convert the Database record to Scala data model
+
+doobie supply 4 type class to do this work
+
+1. `Get[A]` - convert Database data type to Scala data type
+2. `Put[A]` - convert Scala data type to Database data type
+3. `Read[A]` - convert Database record to Scala data model
+4. `Write[A]` - convert Scala data model to Database record
+
+Usually we don't need to care about them, doobie already defined them for most of the data type, even for `case class`. we can query `case class` directly like this
+
+```scala
+case class Person(name:String, age:Int)
+
+sql"select name, age from person".query[Person].to[List]
+```
+
+If the existing data mapping can not meet our requirements, we can always generate new data mapping from existing one.
+
 ## Transactor
 
-A Transactor is a data type that knows how to connect to a database, hand out connections, and clean them up; and with this knowledge it can transform ConnectionIO ~> I
+A Transactor is just the interpretor of `Free Monad` which will translate the programm to real `java.sql` program.
+
+We can set up the JDBC driver, connection pool in Transactor.
 
 # Usage
 
@@ -153,7 +227,7 @@ To connect to a database, we need to add the corresponding database dependency i
 And pass the JDBC driver name to `Transactor`.
 
 ```scala
-implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
+implicit val cs:ContextShift = ???
 val xa = Transactor.fromDriverManager[IO](
   "org.postgresql.Driver",     // driver classname
   "jdbc:postgresql:world",     // connect URL (driver-specific)
@@ -164,9 +238,9 @@ val xa = Transactor.fromDriverManager[IO](
 
 ## How to run sql?
 
-1. Use `sql` to construct a statement 
-2. Generate a `Query` or `Update`
-3. Generate `ConnectionIO`
+1. Use `sql` interpolator to construct a statement 
+2. Generate a `Query` by `Fragment.query` or `Update` by `Fragment.update`
+3. Generate `ConnectionIO` by `Query.to`, `Query.unique`, `Query.option` or `Update.run`
 3. Pass `ConnectionIO` to `Transactor` to geneate `IO`
 4. Run the `IO`
 
@@ -180,11 +254,9 @@ io.unsafeRunSync
 * Single Column
 
   ```scala
-  sql"select name from country"
+  sql"select name from person"
   .query[String]    // Query0[String]
-  .stream           // Stream[ConnectionIO, String]
-  .take(5)          // Stream[ConnectionIO, String]
-  .compile.toList   // ConnectionIO[List[String]]
+  .to[List]         // ConnectionIO[List[String]]
   .transact(xa)     // IO[List[String]]
   .unsafeRunSync    // List[String]
   ```
@@ -192,43 +264,162 @@ io.unsafeRunSync
 * Multiple Column
 
   ```scala
-  sql"select code, name, population, gnp from country"
-    .query[(String, String, Int, Option[Double])]
-    .stream
-    .take(5)
-    .quick
-    .unsafeRunSync
+  sql"select name, age from person"
+    .query[(String, Int)] //Query0[(String, Int)]
+    .to[List]             //ConnectionIO[List[(String, Int)]]
+    .transact(xa)         //IO[List[(String, Int)]]
+    .unsafeRunSync        //List[(String, Int)]
   ```
 
 * Custom Model
 
   ```scala
-  case class Country(code: String, name: String, pop: Int, gnp: Option[Double])
-  sql"select code, name, population, gnp from country"
-    .query[Country]
-    .stream
-    .take(5)
-    .quick
-    .unsafeRunSync
+  case class Person(name:String, age:Int)
+  sql"select name, age from person"
+    .query[Person]        //Query0[Person]
+    .to[List]             //ConnectionIO[List[Person]]
+    .transact(xa)         //IO[List[Person]]
+    .unsafeRunSync        //List[Person]
+  ```
+
+* With Condition
+
+  ```scala
+  case class Person(name:String, age:Int)
+  val ageThreshold:Int = 18
+  sql"select name, age from person where age > ${ageThreshold}"
+    .query[Person]        //Query0[Person]
+    .to[List]             //ConnectionIO[List[Person]]
+    .transact(xa)         //IO[List[Person]]
+    .unsafeRunSync        //List[Person]
+  ```
+
+  ```scala
+  case class Person(name:String, age:Int)
+  val requiredName:NonEmptyList[String] = NonEmptyList.of("Tom", "Jerry", "John") 
+  sql"select name, age from person where " ++ Fragments.in(fr"name", requriedName)
+    .query[Person]        //Query0[Person]
+    .to[List]             //ConnectionIO[List[Person]]
+    .transact(xa)         //IO[List[Person]]
+    .unsafeRunSync        //List[Person]
   ```
 
 ## How to insert a record?
 
+  ```scala
+  val person:Person = ???
+  sql"insert into person (name, age) values ($person.name, $person.age)"
+    .update               //Update0
+    .run                  //ConnectionIO[Int]
+    .transact(xa)         //IO[Int]
+    .unsafeRunSync        //Int
+  ```
 ## How to update a record?
+
+  ```scala
+  sql"update person set age = 18 where name = 'Tom'"
+    .update               //Update0
+    .run                  //ConnectionIO[Int]
+    .transact(xa)         //IO[Int]
+    .unsafeRunSync        //Int
+  ```
 
 ## How to delete a record?
 
+  ```scala
+  sql"delete from person where name = 'Tom'"
+    .update               //Update0
+    .run                  //ConnectionIO[Int]
+    .transact(xa)         //IO[Int]
+    .unsafeRunSync        //Int
+  ```
 
-## How to map column to model?
+## How to create new type mapping between Database and Scala?
 
-## How to map model to column?
+  Say we defined a `Status` to check if a person is free
 
-## How to map record to model?
+  ```scala
+  sealed trait Status
+  case object Busy extends Status
+  case object Free extends Status
+  ```
 
-## How to map model to record?
+  We know there is no corresponding data type in Database. but we still want to compose program like this
+
+  ```scala
+  val status:Status = Free
+  sql"update person set status = $status where name = 'Tom'"
+    .update
+    .run
+    .transact(xa)
+    .unsafeRunSync
+
+  sql"select status from person where name 'Tome'"
+    .query[Status]
+    .unique
+    .transact(xa)
+    .unsafeRunSync
+  ```
+
+  So we need to supply the instance of `Get[Status]` and `Put[Status]` to tell doobie how to mapping `Status`
+
+  ```scala
+  object Status {
+    implicit statusGet:Get[Status] = Get[String].map[Status](x => if(x == "busy") Busy else Free)
+    implicit statusPut:Put[Status] = Put[String].contramap[Status](x => if(x == Busy) "busy" else "free")
+  }
+  ```
 
 ## How to manage the connections?
 
+`doobie-hikari` library supply another implementation of `Transactor` which support connection pool
+
+```scala
+val transactor: Resource[IO, HikariTransactor[IO]] =
+  for {
+    ce <- ExecutionContexts.fixedThreadPool[IO](32) // our connect EC
+    be <- Blocker[IO]    // our blocking EC
+    xa <- HikariTransactor.newHikariTransactor[IO](
+            "org.h2.Driver",                        // driver classname
+            "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",   // connect URL
+            "sa",                                   // username
+            "",                                     // password
+            ce,                                     // await connection here
+            be                                      // execute JDBC operations here
+          )
+  } yield xa
+```
+
 ## How to do test?
 
+doobile supply test library both for `specs2` and `scalatest`
+
+* Specs2
+
+  ```scala
+  class AnalysisTestSpec extends Specification with doobie.specs2.IOChecker {
+
+    val transactor = Transactor.fromDriverManager[IO](
+      "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", ""
+    )
+
+    check(sql"select * from person".query[Person])
+  }
+  ```
+
+* ScalaTest
+
+  ```scala
+  class AnalysisTestScalaCheck extends FunSuite with Matchers with doobie.scalatest.IOChecker {
+
+    val transactor = Transactor.fromDriverManager[IO](
+      "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", ""
+    )
+
+    test("query") { check(sql"select * from person".query[Person])}
+  }
+  ```
+
 # Summary
+
+Hope this document can help you, doobie has a very good [official document](https://tpolecat.github.io/doobie/), you can find more advanced usage there.
