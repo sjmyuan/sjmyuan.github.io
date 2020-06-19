@@ -265,8 +265,129 @@ object Main {
 }
 ```
 
-We can see this code can not compile
+Oops, We got a compile error. Obviously the program is just an instance mixing in a set of Trait.
+But this set of Trait may have same variable/function which will override each other and make the code hard to understand, then we have to be careful to develop the components to avoid same variable/function.
 
-# New Requirement
+The root cause here is the content of Trait is mixed in instance flatly, we can't identify the source of variable/function in the instance. 
+To solve this problem, we can put the content of Trait to a variable, and mix in this variable to instance, then we just need to ensure each Trait(Component) have different variable name which will be eaisier than before.
+
+```scala
+trait DataSourceComponent {
+  val source: DataSource
+  trait DataSource {
+    def getData: List[Int]
+  }
+}
+
+trait HttpRequestComponent {
+  val http: HttpRequest
+  trait HttpRequest {
+    def get(url: String): String
+  }
+}
+
+trait LogHttpRequestComponent extends HttpRequestComponent {
+
+  val http: HttpRequest = new LogHttpRequest {}
+
+  trait LogHttpRequest extends HttpRequest {
+    override def get(url: String): String = {
+      println(s"send request to ${url}")
+      List(1, 2, 3, 4, 5, 6).mkString(",")
+    }
+  }
+}
+
+trait HttpDataSourceComponent extends DataSourceComponent {
+  self: HttpRequestComponent =>
+
+  val source: DataSource = new HttpDataSource {}
+
+  trait HttpDataSource extends DataSource {
+    override def getData: List[Int] =
+      http.get("http://example.com/data").split(",").map(_.toInt).toList
+  }
+}
+
+trait DataStoreComponent {
+  val store: DataStore
+
+  trait DataStore {
+    def save(data: List[Int]): Unit
+  }
+}
+
+trait DatabaseComponent {
+  val database: Database
+  trait Database {
+    def run(sql: String): Unit
+  }
+}
+
+trait LogDatabaseComponent extends DatabaseComponent {
+  val database: Database = new LogDatabase {}
+  trait LogDatabase extends Database {
+    override def run(sql: String): Unit = println(s"run sql ${sql}")
+  }
+}
+
+trait DatabaseStoreComponent extends DataStoreComponent {
+  self: DatabaseComponent =>
+
+  val store: DataStore = new DatabaseStore {}
+
+  trait DatabaseStore extends DataStore {
+    override def save(data: List[Int]): Unit =
+      database.run(s"insert into data_table values(${data.mkString(",")})")
+
+  }
+}
+
+trait DataEncoderComponent {
+  val encoder: DataEncoder
+
+  trait DataEncoder {
+    def encode(data: List[Int]): List[Int]
+  }
+}
+
+trait PlusOneEncoderComponent extends DataEncoderComponent {
+  val encoder: DataEncoder = new PlusOneEncoder {}
+  trait PlusOneEncoder extends DataEncoder {
+    def encode(data: List[Int]): List[Int] = {
+      println(s"encoding ${data}")
+      data.map(_ + 1)
+    }
+  }
+}
+
+trait DataJob {
+  self: DataSourceComponent with DataStoreComponent with DataEncoderComponent =>
+
+  def run(notes: String): Unit = {
+    println(notes)
+    val data = source.getData
+    val encodedData = encoder.encode(data)
+    store.save(encodedData)
+  }
+}
+
+object Main {
+  def main() {
+    val program = new DataJob
+      with LogHttpRequestComponent
+      with DatabaseStoreComponent
+      with HttpDataSourceComponent
+      with PlusOneEncoderComponent
+      with LogDatabaseComponent {}
+
+    program.run("This is Module Pattern")
+    // This is Module Pattern
+    // send request to http://example.com/data
+    // encoding List(1, 2, 3, 4, 5, 6)
+    // run sql insert into data_table values(2,3,4,5,6,7)
+  }
+}
+```
 
 # Summary
