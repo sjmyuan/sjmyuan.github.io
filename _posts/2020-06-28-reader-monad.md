@@ -4,17 +4,17 @@ tags:
 - Scala
 categories:
 - Scala Tutorial
+date: 2020-06-28 23:57 +0800
 ---
+Reader Monad is very popular in FP, you can find lots of high quality blogs by Google.
 
-Reader Monad is very popular in FP, you can find lots of high qulity blogs by Google.
-
-[...And Monads for (Almost) All: The Reader Monad](https://dev.to/riccardo_cardin/and-Monads-for-almost-all-the-reader-Monad-1ife)
+[...And Monads for (Almost) All: The Reader Monad](https://dev.to/riccardo_cardin/and-monads-for-almost-all-the-reader-monad-1ife)
 use a very good example to explain why we need Reader Monad.
 
 [A Simple Reader Monad Example](https://blog.ssanj.net/posts/2014-09-23-A-Simple-Reader-Monad-Example.html)
 give a simple definition of Reader Monad which filter out the noise of ReaderT.
 
-In this blog, I will derive the Reader Monad from the real problem I got in project.
+In this blog, I will derive the Reader Monad from a real problem I got in my project.
 
 # The Problem
 
@@ -62,7 +62,7 @@ object Main {
 Imagine we get a new requirement, all the logs in one thread need to contain the same transaction id,
 then we can identify the whole workflow even in parallel program. The output should look like this
 
-```scala
+```
 trans1 - fetching data
 trans2 - fetching data
 trans2 - data before encode List(1, 2, 3)
@@ -75,7 +75,7 @@ trans2 - saving data List(2, 3, 4)
 
 # Solution
 
-## Pass transaction id by parameter
+## By parameter
 
 The intuitive solution is adding one more parameter to every function to pass the transaction id
 
@@ -121,7 +121,7 @@ object Main {
 ```
 
 This can work, but what if we have dozens of functions?
-When it happened in my project, I always think why I have to pass one parameter everywhere but I don't need to care about it most of the time. 
+When it happened in my project, I always think why I have to pass one parameter everywhere but I don't care about it most of the time. 
 It become more nosiy with more functions.
 
 Maybe we can use a Class to wrap the functions, then all the functions can share one transaction variable in Class
@@ -162,16 +162,16 @@ object Main {
 }
 ```
 
-This looks cleaner, but we can't wrap all function in one Class, they will exist in different Class which follow the SOLID principle.
-If we want to use this solution, we have to pass transaction to every Class constructor, which will have same problem with function parameter and just increase the threshold we can bear.
+This looks cleaner, but we can't wrap all functions in one Class, they will exist in different Class which follow the SOLID principle.
+If we want to use this solution, we have to pass transaction to every Class constructor, which will have the same problem with function parameter and just increase the threshold we can bear.
 
-## Return function
+## By return function
 
 Let's just think about why we feel noisy about the transaction parameter.
 
 * The parameter has nothing to do with business logic, what we do is just get it from somewhere and pass it to somewhere else.
 * Only few code use it, but we have to carry the context everywhere.
-* The value is same most of the time, can't we put it to some global variable and get it if need?.
+* The value won't be modified most of the time, can't we put it to some global variable and get it if need?.
 
 I think we agree the function need to know the transaction id, there are 3 ways to achieve this
 
@@ -229,7 +229,7 @@ object Main {
 }
 ```
 
-We can see it doesn't work, one global variable can't separate multiple threads.
+It doesn't work, one global variable can't separate multiple threads.
 
 Let's try the last option, return a function.
 
@@ -281,9 +281,14 @@ It works, compared to the original code, the difference are
 * The job function become a little bit complicated
 * We need to follow some rule to compose functions to ensure they get the same transaction id.
 
+  ```scala
+  val encodedDataFunc: String => List[Int] = trans => encode(getDataFunc(trans))(trans)
+  val saveDataFunc: String => Unit = trans => save(encodedDataFunc(trans))(trans)
+  ```
+
 If we can make these parts easy to maintain, it looks like a better solution.
 
-## Return effect
+## By return effect
 
 Let's recall what's effect in [What is Funcional Programming?](https://blog.shangjiaming.com/scala%20tutorial/what-is-fp/)
 
@@ -302,7 +307,7 @@ Hmm, what if we get two agencies which need to work together?
 > they need to share it with each other.
 > So don't worry about this, just let them do the job, they will pass the information if need.
 
-Ok, from the last section, the agency is actually a function. 
+Ok, the agency is actually a function. 
 According to [Algebraic Data Type](https://blog.shangjiaming.com/scala%20tutorial/algebraic-data-type/), we can define a simple effect for it.
 
 ```scala
@@ -327,6 +332,8 @@ case class Reader[A, B](run: A => B) {
 }
 ```
 
+I need to call out here, Reader is a Monad for `B`.
+
 `map` is straightforward. 
 
 `flatMap` apply some rule when composing 
@@ -335,7 +342,7 @@ case class Reader[A, B](run: A => B) {
 f(run(x)).run(x)
 ```
 
-It not only pass the required information(x) to current Reader(`run(x)`), but also next Reader(`f.run(x)`).
+It not only pass the required information(`x`) to current Reader(`run(x)`), but also next Reader(`f.run(x)`).
 By this way, we pass `x` everywhere implicitly.
 
 Then our code can be refined by Reader like this
@@ -414,18 +421,18 @@ object Main {
 
 We add an util function `ask` here to make it easy to read the required information.
 
-Now we have a Reader Monad to help us solve the 3 problems raised in the last section
+Now we have a Reader Monad to help us solve the problems raised in the last section
 
-* The returned type is Reader, which is easier to understand than `String => A`.
+* The return type is Reader, which is easier to understand than `String => A`.
 * Use for-expression in job function, which has similiar structure with original code.
 * Use Reader Monad to compose function, which pass transaction everywhere implicitly.
 
-The only price is we need to involve a Monad and understand its behavior. 
+The only price is we need to involve Reader Monad and understand its behavior,
 but it is worth to pay it.
 
 # Summary
 
-Let's compare the code between parameter and Reader moand
+Let's compare the code between Parameter solution and Reader Monad solution
 
 ## Function using the transaction
 
@@ -460,7 +467,7 @@ Let's compare the code between parameter and Reader moand
   }
   ```
 
-We can see the Reader Monad solution need to change the return type and use the for-expression, which need more effort, but still can accept.
+The Reader Monad solution modify the return type and use for-expression, which need more effort, but still can be accepted.
 
 The Parameter solution modify the function signature, which will also involve some effort to modify the code using it.
 
@@ -498,16 +505,15 @@ The Parameter solution modify the function signature, which will also involve so
   }
   ```
 
-We can see the Parameter solution still need to modify the function signature, but except child functions, there is no logic in this function using the transaction parameter.
-The transaction will become more and more noisy when there are more and more code in job function.
+The Parameter solution modify the function signature. But except child functions, there is no logic in this function using the transaction parameter.
+The transaction will become more and more noisy when there are more and more code in the job function.
 
-Not like Parameter solution, Reader Monad solution modify the returned type, except the for-expression, we can't see any explicit code about transaction, which is more clean.
+Not like Parameter solution, Reader Monad solution modify the return type and use for-expression, we can't see any explicit code about transaction, which is cleaner.
 
 ## Suggestion
 
-Based on the comparison, we know Reader Monad is good at the function passing through information, which are the most parts of real project.
+Based on the comparison, Reader Monad is good at the function passing through information, which are the most parts of real project.
 
-So if we need to access some information only required by few functions,
-but these function may be invoked in any level, which means you may need to carry the information everywhere, Reader Monad is a good choice.
+So if only few functions require some information and they may be invoked in any level, which means you need to carry the information everywhere, Reader Monad is a good choice.
 
-We can also replace the information with module, such as Configuration, Database connection, Logger etc, then we can get a new coding pattern `Reader Pattern`, let's talk about it in another blog.
+We can also replace the information with module, such as Configuration, Thread Pool, Database Connection, Logger etc, then we get a new coding pattern `Reader Pattern`, let's talk about it in another blog.
