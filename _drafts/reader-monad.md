@@ -8,7 +8,7 @@ categories:
 
 Reader Monad is very popular in FP, you can find lots of high qulity blogs by Google.
 
-[...And Monads for (Almost) All: The Reader Monad](https://dev.to/riccardo_cardin/and-monads-for-almost-all-the-reader-monad-1ife)
+[...And Monads for (Almost) All: The Reader Monad](https://dev.to/riccardo_cardin/and-Monads-for-almost-all-the-reader-Monad-1ife)
 use a very good example to explain why we need Reader Monad.
 
 [A Simple Reader Monad Example](https://blog.ssanj.net/posts/2014-09-23-A-Simple-Reader-Monad-Example.html)
@@ -252,7 +252,7 @@ object Main {
     println(s"$transaction - saving data ${data}")
   }
 
-  def job(transaction: String):Unit = {
+  def job():String => Unit = transaction => {
     val getDataFunc = getData
     val encodedDataFunc: String => List[Int] = trans => encode(getDataFunc(trans))(trans)
     val saveDataFunc: String => Unit = trans => save(encodedDataFunc(trans))(trans)
@@ -260,8 +260,8 @@ object Main {
   }
 
   def main() = {
-    Future(job("trans1"))
-    Future(job("trans2"))
+    Future(job()("trans1"))
+    Future(job()("trans2"))
 
     //trans1 - fetching data
     //trans2 - fetching data
@@ -311,7 +311,7 @@ case class Reader[A, B](run: A => B)
 
 Because all the agencies need to read the required information first then do the job, we call the effect Reader here.
 
-According to [Monad](https://blog.shangjiaming.com/scala%20tutorial/scala-monad/), we need to compose Reader to make them work together, let's define `map` and `flatMap` for it. 
+According to [Monad](https://blog.shangjiaming.com/scala%20tutorial/scala-Monad/), we need to compose Reader to make them work together, let's define `map` and `flatMap` for it. 
 
 ```scala
 case class Reader[A, B](run: A => B) {
@@ -388,19 +388,17 @@ object Main {
     }
   }
 
-  def job(transaction: String): Unit = {
-    val program: Reader[String, Unit] = for {
-    data <- getData
-    encodedData <- encode(data)
-     _ <- save(encodedData)
+  def job(): Reader[String, Unit] = {
+    for {
+      data <- getData
+      encodedData <- encode(data)
+      _ <- save(encodedData)
     } yield ()
-
-    program.run(transaction)
   }
 
   def main() = {
-    Future(job("trans1"))
-    Future(job("trans2"))
+    Future(job().run("trans1"))
+    Future(job().run("trans2"))
 
     //trans2 - fetching data
     //trans1 - fetching data
@@ -416,23 +414,100 @@ object Main {
 
 We add an util function `ask` here to make it easy to read the required information.
 
-Now we have a Reader monad to help us solve the 3 problems raised in the last section
+Now we have a Reader Monad to help us solve the 3 problems raised in the last section
 
 * The returned type is Reader, which is easier to understand than `String => A`.
 * Use for-expression in job function, which has similiar structure with original code.
-* Use Reader monad to compose function, which pass transaction everywhere implicitly.
+* Use Reader Monad to compose function, which pass transaction everywhere implicitly.
 
 The only price is we need to involve a Monad and understand its behavior. 
 but it is worth to pay it.
 
 # Summary
 
-First, We can give a description of noisy information in this blog 
+Let's compare the code between parameter and Reader moand
 
-> Only few nested functions use it, but all the parent functions need to pass through it.
+## Function using the transaction
 
-The signature of method in Java is just include method name and method parameters.
-When we code, we also pay more attention to the parameters than the return value of function. 
-If our function have to access some noisy information, putting them in return value is a better option.
+* Original code
 
-Reader monad is a good choice to do this work.
+  ```scala
+  def getData: List[Int] = {
+    println(s"fetching data")
+    List(1, 2, 3)
+  }
+  ```
+
+* Parameter solution
+
+  ```scala
+  def getData(transaction: String): List[Int] = {
+    println(s"$transaction - fetching data")
+    List(1, 2, 3)
+  }
+  ```
+
+* Reader Monad solution
+
+  ```scala
+  def getData: Reader[String, List[Int]] = {
+    for {
+      trans <- Reader.ask[String]
+    } yield {
+      println(s"$trans - fetching data")
+      List(1, 2, 3)
+    }
+  }
+  ```
+
+We can see the Reader Monad solution need to change the return type and use the for-expression, which need more effort, but still can accept.
+
+The Parameter solution modify the function signature, which will also involve some effort to modify the code using it.
+
+## Function passing through transaction
+
+* Original code
+
+  ```scala
+  def job():Unit = {
+    val data = getData
+    val encodedData = encode(data)
+    save(encodedData)
+  }
+  ```
+
+* Parameter solution
+
+  ```scala
+  def job(transaction: String):Unit = {
+    val data = getData(transaction)
+    val encodedData = encode(data, transaction)
+    save(encodedData, transaction)
+  }
+  ```
+
+* Reader Monad solution
+
+  ```scala
+  def job(): Reader[String, Unit] = {
+    for {
+      data <- getData
+      encodedData <- encode(data)
+      _ <- save(encodedData)
+    } yield ()
+  }
+  ```
+
+We can see the Parameter solution still need to modify the function signature, but except child functions, there is no logic in this function using the transaction parameter.
+The transaction will become more and more noisy when there are more and more code in job function.
+
+Not like Parameter solution, Reader Monad solution modify the returned type, except the for-expression, we can't see any explicit code about transaction, which is more clean.
+
+## Suggestion
+
+Based on the comparison, we know Reader Monad is good at the function passing through information, which are the most parts of real project.
+
+So if we need to access some information only required by few functions,
+but these function may be invoked in any level, which means you may need to carry the information everywhere, Reader Monad is a good choice.
+
+We can also replace the information with module, such as Configuration, Database connection, Logger etc, then we can get a new coding pattern `Reader Pattern`, let's talk about it in another blog.
