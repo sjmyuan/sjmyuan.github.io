@@ -4,25 +4,25 @@ tags:
 - Scala
 categories:
 - Scala Tutorial
+date: 2020-07-05 22:35 +0800
 ---
-
 We already introduced [Reader Monad](https://blog.shangjiaming.com/scala%20tutorial/reader-monad/),
-which can carry some information everywhere and supply a solution of global variable/function in FP. 
+It can inject dependency to function by returning a Reader effect.
 
-What if we put dependencies into Reader Monad as something like global context?
-In this blog, let's use Reader Monad to implement the requirement in [Cake Pattern](https://blog.shangjiaming.com/scala%20tutorial/cake-pattern/)
+In this blog, let's call the first type parameter of Reader Monad as context. we will put dependencies into the context and
+use Reader Monad to implement the requirement in [Cake Pattern](https://blog.shangjiaming.com/scala%20tutorial/cake-pattern/)
 
-# Global Context
+# Context with minimum dependencies
 
 Not like transaction in [Reader Monad](https://blog.shangjiaming.com/scala%20tutorial/reader-monad/),
-we need to pass more than one dependency here, which can't be done in Reader Monad.
-So we need to create a new type to contain all the dependencies.
+we need to pass more than one dependency here, which can't be done directly by Reader Monad.
+So we need to create a new type as context to wrap all the dependencies.
 
 ```scala
 case class Env(http: HttpRequest, database: Database)
 ```
 
-To use Reader Monad, we also need to modify the method of DataSource and DataStore, let them return Reader Monad.
+To use Reader Monad, we also need to modify the function return type of DataSource and DataStore.
 
 ```scala
 trait DataSource[A] {
@@ -52,7 +52,11 @@ class DatabaseStore extends DataStore[Env] {
       s"insert into data_table values(${data.mkString(",")})"
     )
 }
+```
 
+Because DataJob don't need to access the dependencies in Env, we can leave context as A
+
+```scala
 class DataJob[A](
     source: DataSource[A],
     store: DataStore[A],
@@ -67,7 +71,7 @@ class DataJob[A](
 }
 ```
 
-And the dependencies can be wired in main like this
+Then the dependencies can be wired in main like this
 
 ```scala
 object Main {
@@ -98,9 +102,12 @@ Not like parameter pattern and cake pattern
 * DatabaseStore doesn't depend on LogDatabase directly
 * All the dependencies(env) is injected at the last step
 
-At least, except DataJob we can instantiated other module separately.
+Except DataJob, we can instantiated other components separately.
 
-Maybe you will ask, could we also put source, store and encoder into env? then DataJob can be free(Doesn't have direct dependency)
+# Context with maximum dependencies
+
+Maybe you will ask, could we also put source, store and encoder into context?
+Then DataJob can also be instantiated separately.
 
 Let's try
 
@@ -108,40 +115,31 @@ Let's try
 case class Env[A](http: HttpRequest, database: Database, source: DataStore[A], store: DataStore[A], encoder: DataEncoder)
 ```
 
-DataStore and DataSource need a type parameter here, so we add a type parameter to Env. Then our implementation could be
+DataStore and DataSource need a type parameter here, so we add a type parameter A to Env.
+Then our implementation could be
 
 ```scala
 class HttpDataSource extends DataSource[Env[???]] {
-  override def getData: Reader[Env, List[Int]] =
+  override def getData: Reader[Env[???], List[Int]] =
     for {
-      env <- Reader.ask[Env]
+      env <- Reader.ask[Env[???]]
     } yield env.http.get("http://example.com/data").split(",").map(_.toInt).toList
 }
 
 class DatabaseStore extends DataStore[Env[???]] {
-  override def save(data: List[Int]): Reader[Env, Unit] =
+  override def save(data: List[Int]): Reader[Env[???], Unit] =
     for {
-      env <- Reader.ask[Env]
+      env <- Reader.ask[Env[???]]
     } yield env.database.runSql(
       s"insert into data_table values(${data.mkString(",")})"
     )
 }
-
-class DataJob {
-  def run: Reader[Env[???], Unit] =
-    for {
-      env <- Reader.ask[Env[???]]
-      data <- env.source.getData
-      val encodedData = env.encoder.encode(data)
-      _ <- env.store.save(encodedData)
-    } yield ()
-}
 ```
 
-We use `Env[???]` for every type parameter, because we don't know the final type of `Env[_]`.
+We use `Env[???]` here, because we don't know its final type.
 It may looks like `Env[Env[Env[Env[....]]]]`, which is a dead loop.
 
-Maybe we can hard code the type parameter in Env
+To compile the code, maybe we can hard code the type parameter in Env
 
 ```scala
 case class Env(http: HttpRequest, database: Database, source: DataStore[Env], store: DataStore[Env], encoder: DataEncoder)
@@ -165,7 +163,11 @@ class DatabaseStore extends DataStore[Env] {
       s"insert into data_table values(${data.mkString(",")})"
     )
 }
+```
 
+The DataJob become
+
+```scala
 class DataJob {
   def run: Reader[Env, Unit] =
     for {
@@ -177,7 +179,7 @@ class DataJob {
 }
 ```
 
-And the DataJob is free now
+Now we can instantiated all the components separately
 
 ```scala
 object Main {
@@ -201,15 +203,16 @@ You can find the full code in [reader-pattern-all-in-context.scala](https://gist
 Most of the code looks better now
 
 * Don't need to modify HttpDataSource and DatabaseStore.
-* Only add one line `env <- Reader.ask[Env]` in DataJob, but we don't need to care class parameter anymore.
-* Modules don't need to know each other until the last two line
+* Add one line `env <- Reader.ask[Env]` in DataJob, but we don't need to care about class parameter anymore.
+* Components don't need to depend on each other explicitly
+* The main is simpler, just instantiated all the components and put them into Env.
 
 But we need to pay the price
 
 * There are circular type dependency in Env, which is harder to understand
-* No restriction to use the memeber of Env, which may involve big issue in the future. 
+* No restriction to use the memebers of Env, which is easy to make mistake. 
 
-  For example, we can even invoke `store.save` in the implementation of `store.save`
+  For example, we can even invoke `store.save` in the implementation
 
   ```scala
   class DatabaseStore extends DataStore[Env] {
@@ -225,20 +228,24 @@ But we need to pay the price
 * The Env will become bigger and bigger, which is hard to maintain
 * The dependency graph is not clear, we need to dig into the code to find out it.
 
-Seems the price is too high, we think the first solution is better, we'd better only put the module without any dependency to the Env.
+Seems the price is too high,
+we think context with minimum dependencies is better,
+we'd better only put the components without any dependency into the context.
 
 # Refinement
 
-Based on the first solution in the last section, we still have two pain points
+Based on context with minimum dependencies, we still have two pain points
 
-* Even we only put module without dependency to Env, we still inject too much things, if someone call other dependencies, we can't know easily except digging into the code.
+* Even we only put components without dependency into context, we still inject too many things.
+  If someone call other dependencies, we can't know easily except digging into the code.
   Could we just inject what we need?
-* When we do test for some module, such as HttpDataSource and DatabaseStore, we have to prepare all the data of Env, but we just want to use part of them.
 
-Let's recall the [Implicit](https://blog.shangjiaming.com/scala%20tutorial/implicit/) usage, it can restrict the type parameter.
-Since we don't want to inject the whole Env, then let's use type parameter + implicit to apply some restriction.
+* When we do unit test for components, such as HttpDataSource and DatabaseStore, we have to prepare all the data of context, but we just want to use part of them.
 
-Imagine we have a type `A`, we expect it have a variable `http: HttpRequest`, how do we apply the restriction?
+Let's recall the [Implicit](https://blog.shangjiaming.com/scala%20tutorial/implicit/) usage scenarios, it can apply restriction to the type parameter.
+Since we don't want to inject the whole context, then let's use `type parameter + implicit` to filter the dependencies we need.
+
+Imagine there is a type `A`, we expect it has a variable `http: HttpRequest`, how do we apply the restriction?
 Right, we can require a function `A => HttpRequest` together with `A`
 
 ```scala
@@ -246,7 +253,7 @@ def getData[A](a: A)(getHttpRequest: A => HttpRequest) =
   getHttpRequest(a).get("http://example.com/data").split(",").map(_.toInt).toList
 ```
 
-The usage of function is too common, it can not highlight our purpose, let's use type class to make it more targeted.
+But the signature of this function is too common, it can not highlight our purpose, let's use [Type Class](https://blog.shangjiaming.com/scala%20tutorial/type-classes/) to make it more targeted.
 
 ```scala
 trait HasHttpRequest[A]{
@@ -270,7 +277,7 @@ object Env {
 Compared to `def getData(a: Env)`, `def getData[A: HasHttpRequest](a: A)` don't care about the real type of `A`,
 It just require `A` implement the `HasHttpRequest` type class.
 
-Use this way, the module will only know the dependency it declare to access and we just need to mock the data we need in test
+Use this way, the components will only know the dependencies which are declared to access and we just need to mock the data we need in test
 
 ```scala
 case class MockEnv(http: HttpRequest)
@@ -286,5 +293,5 @@ You can find the full code in [reader-pattern.scala](https://gist.github.com/sjm
 # Summary
 
 Reader Pattern can do dependency injection easily and it can restrict the dependency scope very well.
-But we can't put all the dependencies in the context, it will be harder and harder to maintain with code growing. 
-It's fine to just put the dependency without other dependency in context, which minimise the probability of mistake.
+But we can't put all the dependencies into context, it will be harder and harder to maintain with code growing. 
+It's fine to just put the dependencies without dependency into context, which minimise the probability of mistake.
