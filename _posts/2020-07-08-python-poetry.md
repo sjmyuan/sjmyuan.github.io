@@ -1,13 +1,13 @@
 ---
 title: Python 工程管理
 tags:
-  - Python
+- Python
 categories:
-  - Python Tutorial
+- Python Tutorial
+date: 2020-07-08 21:58 +0800
 ---
-
-接触Python也有五六年了，一直都是小打小闹，撑死了也就一个几十行的小脚本，
-大型工程的管理也就知道需要一个requirement.txt去管理依赖,从来没有实践过。
+接触Python也有五六年了，一直都是小打小闹，撑死了也就一个几十行的小脚本。
+大型工程也就知道需要一个requirement.txt去管理依赖，从来没有实践过。
 前段时间用Python开发了一个图床工具[simple-image-tool](https://github.com/sjmyuan/simple-image-tool)，
 在这里分享一下用到的工程管理工具[Poetry](https://python-poetry.org/)(主页很酷炫)
 
@@ -17,11 +17,11 @@ categories:
 
 * 依赖管理
 * 打包
-* 自定义任务
 
-Python也有一些工具可以满足其中一些需求，但显然太复杂了，让我们看看开发Poetry的动机
+Python也有一些工具可以满足这些需求，但太复杂了，让我们看看Poetry的开发动机
 
 > Packaging systems and dependency management in Python are rather convoluted and hard to understand for newcomers. Even for seasoned developers it might be cumbersome at times to create all files needed in a Python project: setup.py, requirements.txt, setup.cfg, MANIFEST.in and the newly added Pipfile.
+>
 > So I wanted a tool that would limit everything to a single configuration file to do: dependency management, packaging and publishing.
 
 Poetry可以满足我们的这些基本需求，且所有配置都放在一个叫`pyproject.toml`的文件里，个人觉得使用体验和npm/yarn差不多。
@@ -133,11 +133,11 @@ my-script = "my_module:main"
 
 * tool.poetry.dev-dependencies
 
-  工程开发时需要的依赖
+  工程仅在开发时需要的依赖
 
 * tool.poetry.scripts
 
-  自定义任务，可以通过`poetry run` 执行
+  工程安装后支持的命令，也可以通过`poetry run` 在本地执行
 
 如果想要交互式的创建工程，可以执行`poetry init`。
 
@@ -153,10 +153,73 @@ my-script = "my_module:main"
   ```
 
 * 删除依赖
+
+  ```bash
+  poetry remove <dependency>
+
+  # poetry remove requests
+  ```
+
+* 更新依赖
+ 
+  ```bash
+  poetry update [dependency]
+
+  # poetry update requests
+  ```
+
 * 锁定版本
+
+  和yarn类似，当我们安装完依赖后会产生一个`poetry.lock`文件, 只需将该文件一起上传到代码库即可。
+
 * 安装所有依赖
-* 只安装production 依赖
+
+  ```bash
+  poetry install # 安装所有依赖
+  poetry install --no-dev # 忽略开发依赖
+  poetry install --no-root # 忽略本代码库发布的包
+  ```
 
 # 打包发布
 
-# 自定义任务
+* 工程打包
+
+  ```bash
+  poetry build 
+  ```
+
+  该命令会生成两种格式的包： 源代码(sdist)和编译文件(wheel)
+
+* 发布到PyPI
+
+  ```bash
+  poetry publish
+  ```
+
+  运行该命令前，我们需要先注册PyPI得到用户名和密码
+
+* 定义命令
+
+  如果我们只是提供一个第三方库供别人调用，这步可以忽略。
+
+  如果我们提供的是一个可以执行的命令，我们就需要定义该命令要如何安装，调用入口是哪里。
+
+  `pyproject.toml`中的`tool.poetry.scripts`可以实现我们的需求。
+
+  ```toml
+  [tool.poetry.scripts]
+  simple-image-tool = 'simple_image_tool:main'
+  ```
+
+  当我们用pip安装该库时，pip会安装一个`simple-image-tool` 命令，执行该命令时会调用`simple_image_tool`包中的`main`方法。
+
+  在本地环境我们也可以通过下面的方式执行该命令
+
+  ```bash
+  poetry run simple-image-tool
+  ```
+
+# 总结
+
+很不错的一款工具，极大的减少了学习Python工程管理的时间。
+除了这些基本的功能，它还支持环境隔离，私有库等，还在慢慢探索中，后续会陆续分享给大家。
