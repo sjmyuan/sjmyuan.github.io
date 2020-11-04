@@ -142,56 +142,286 @@ In the future, we may try ZIO which is a combination of Tagless Final and Reader
 
 ### FP
 
-Definitly [cats](https://github.com/typelevel/cats) 
+Definitely [cats](https://github.com/typelevel/cats), add the following line in `build.sbt` 
+
+```scala
+libraryDependencies += "org.typelevel" %% "cats-core" % "2.1.1"
+```
 
 ### Http
 
+[Http4s](https://github.com/http4s/http4s) supply both http server and client based on cats
+
+```scala
+libraryDependencies ++= Seq(
+  "org.http4s" %% "http4s-blaze-server" % "0.21.8",
+  "org.http4s" %% "http4s-blaze-client" % "0.21.8",
+  "org.http4s" %% "http4s-circe" % "0.21.8",
+  "org.http4s" %% "http4s-dsl" % "0.21.8"
+)
+```
+
 ### JSON
+
+[Circe](https://github.com/circe/circe)
+
+```scala
+libraryDependencies ++= Seq(
+  "io.circe" %% "circe-core" % "0.12.3",
+  "io.circe" %% "circe-generic" % "0.12.3",
+  "io.circe" %% "circe-parser" % "0.12.3"
+)
+```
 
 ### Database Connection
 
+[Doobie](https://github.com/tpolecat/doobie)
+
+```scala
+libraryDependencies ++= Seq(
+  "org.tpolecat" %% "doobie-core"      % "0.9.0",
+  "org.tpolecat" %% "doobie-hikari"    % "0.9.0",          // HikariCP transactor.
+  "org.tpolecat" %% "doobie-postgres"  % "0.9.0",          // Postgres driver 42.2.12 + type mappings.
+  "org.tpolecat" %% "doobie-quill"     % "0.9.0",          // Support for Quill 3.5.1
+  "org.tpolecat" %% "doobie-specs2"    % "0.9.0" % "test", // Specs2 support for typechecking statements.
+)
+```
+
 ### Database Migration
+
+[Flyway](https://github.com/flyway/flyway)
+
+```scala
+libraryDependencies += "org.flywaydb" % "flyway-core" % "7.1.1"
+```
 
 ## Code
 
 ### No var
 
+We can modify a variable with var in any time without compiler warning,
+definitely should not use.
+
+Create a new instances with modified value instead.
+
 ### No null
+
+`null` can be assigned to any `AnyRef` variable.
+For a variable with given type,
+we don't know if it really store the value of given type or just `null`,
+which will confuse the meaning of type.
+
+Use Option if your function need to return `null`
 
 ### No Any
 
+Any type can be assigned to `Any`.
+For a variable with `Any` type, we really don't know what value it store.
+The code will be hard to read and maintain.
+
+Use concrete type as much as possible, you don't need `Any`, trust me.
+
 ### No return
 
-### Less if-else
+In function, Scala will treat the value of last expression as return value,
+we don't need to return explicitly.
+
+Can write less code, why not?
 
 ### Use for instead of nested map/flatMap
 
-### Declare type explicitly if possible
+Bad
+
+```scala
+f1()
+  .flatMap(x1 => 
+    f2(x1).flatMap(x2 => 
+      f3(x2).flatMap(x3 => 
+        f4(x3).map(x4 => x4))))
+```
+
+Good
+
+```scala
+for {
+  x1 <- f1()
+  x2 <- f2(x1)
+  x3 <- f3(x2)
+  x4 <- f4(x3)
+} yield x4
+```
+
+for expression is easier to read and maintain.
 
 ### Use implicts cautiously
 
+`implicts` is a powerful tool, it is very easy to be abused.
+Most of time, it is `implicts` which make the code hard to read and maintain.
+It's also the biggest blocker for newbie to learn scala.
+
+Don't use it if possible except you can prove you have to do that.
+
 ### Use pattern-matching instead of fold
+
+Bad
+
+```scala
+val a:Option[Int] = ???
+a.fold(
+  for {
+   x1 <- f1()
+   x2 <- f2(x1)
+  } yield x2
+)(x => 
+  for {
+    x3 <- f3(x)
+    x4 <- f4(x3)
+  } yield x4
+)
+```
+
+Good
+
+```scala
+val a:Option[Int] = ???
+a match {
+case None => 
+  for {
+   x1 <- f1()
+   x2 <- f2(x1)
+  } yield x2
+case Some(x) => 
+  for {
+    x3 <- f3(x)
+    x4 <- f4(x3)
+  } yield x4
+}
+```
+
+Most of time, pattern-matching will be easier to read.
 
 ### Use sealed if possible
 
+For data type with sealed, compiler can help us to check if we cover all the branch
+
 ### Use trait group implict instances and inject then into companion object
+
+For a data type `T`, we may have lots of implict instances, usually they can be grouped like this 
+
+* Instances
+
+  Defined some implict instances used by other components. 
+
+  ```scala
+  implict decoder: Decoder[T] = ???
+  implict ordering: Ordering[T] = ???
+  ```
+
+* Syntax
+
+  Add more methods to the given type.
+
+  ```scala
+  implict class TAddOps(v: T) {
+    def add(other: T): T = ???
+  }
+
+  implict class THttpOps(v: T) {
+    def send: HttpResponse = ???
+  }
+  ```
+
+We don't want to import a package every time to use the implict instances.
+And according to the rule of implict, companion object is the fall back scope to find the implict instances of `T`.
+So it make sense to put all of them into companion object.
+We still want to group these instances better, so the pattern may be like this
+
+```scala
+trait TInstances {
+  implict decoder: Decoder[T] = ???
+  implict ordering: Ordering[T] = ???
+}
+
+trait TSyntax {
+  implict class TAddOps(v: T) {
+    def add(other: T): T = ???
+  }
+
+  implict class THttpOps(v: T) {
+    def send: HttpResponse = ???
+  }
+}
+
+object T extends TInstances with TSyntax
+```
 
 ### Use case class instead of class if possible
 
-### Use by-name assginment for case class
+`case class` is easier to be copied and can be used in pattern-matching.
+Most of time, algebraic data type are composed by `trait` and `case class`.
 
 ### Don't use Option.get, List.head, Either.get, Try.get
 
+These functions may throw exception and easy to be ignored,
+There are safer function like Option.getOrElse, List.headOption, Either.getOrElse, Try.getOrElse.
+
 ### Use F[_], G[_], A, B, C as type parameter
 
-### Use tail-recursive annotation
+Using a set of unified symbol as type parameter can make the code easier to read.
+
+### Use @tail-recursive annotation
+
+If we are wring a recursive function,
+add `@tail-recursive` annotation,
+then compiler can help us to check if it is really a tail recursive.
 
 # Test
 
 ## Framework
 
+[specs2](https://github.com/etorreborre/specs2)
+
+```scala
+libraryDependencies ++= Seq("org.specs2" %% "specs2-core" % "4.10.0" % "test")
+```
+
+spec2 have two type of test style,
+mutable style is similar to other language and also our preffered style.
+
+```scala
+import org.specs2.mutable.Specification
+class HelloSpec extends Specification {
+  "Hello" should {
+    "should print hello" in new Scope {
+      1.toString should_==("1")
+    }
+  }
+}
+```
+
 ## Mock
+
+[mockito-scala](https://github.com/mockito/mockito-scala)
+
+```scala
+libraryDependencies ++= Seq(
+  "org.hamcrest" % "hamcrest" % "2.2" % Test,
+  "org.mockito" %% "mockito-scala-specs2" % "1.15.0" % Test,
+)
+```
+
+specs2 also include mockito, but it doesn't support function default parameter and not good at fp.
+They also suggest us to use mockito-scala.
 
 ## Test Coverage
 
+[sbt-scoverage](https://github.com/scoverage/sbt-scoverage)
+
+```scala
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
+```
+
 # Tips
+
+## Debug
+### Declare type explicitly if possible
