@@ -70,7 +70,7 @@ Format code
 sbt scalafmtAll
 ```
 
-Config IntellJ to use scalafmt
+Use scalafmt in IntellJ IDEA
 
 ![](https://images.shangjiaming.com/3529c8fa-5197-4a56-92a4-491197285da1.jpeg)
 
@@ -84,30 +84,40 @@ you can find the best practice in [scalac-flags](https://tpolecat.github.io/2017
 ### FP
 
 In FP code, sometimes we want to do some type projection to get partial applied type.
-for example, our functions just return error or normal value, then we can define a return type for all function.
+
+For example, We want all functions to return error or normal value, then we can define an unified return type.
 
 ```scala
 type AppErrorOr[A] = Either[Throwable, A]
 ```
 
-But what if we have a function want to return the left of Either?
+But what if we have a function like this
 
 ```scala
-def getLeft[E](either: ???, default: E): E
+def identity[A, F[_]](value: F[A]): F[A] = value 
 ```
 
-Both the type of Left and Right are not fixed, it's not possible to define a partial applied type for `getLeft`. 
+And we want to apply it to `Either`
 
+```scala
+val either:Either[String, Int] = Right(1)
+
+identity(either) // can't be compiled
+```
+
+Compiler tell us we need to give the type parameter explicitly.
+And we found it requires kind F[_], but Either is F[_, _].
+It's not possible to define a partial applied type explicitly every time.
 Here we need the type to be defined anonymously, lucklily Scala support it
 
 ```scala
-def getLeft[E](either: ({type L[A] = Either[E, A]})#L, default: E): E
+identity[Int, ({type L[A] = Either[String, A]})#L](either) // success
 ```
 
 It's pretty hard and ugly to use this syntax, plugin [kind-projector](https://github.com/typelevel/kind-projector) give a better implmentation.
 
 ```scala
-def getLeft[E](either: Either[E, *], default: E): E
+identity[Int, Either[String, *]](either)
 ```
 
 > Note: kind-projector involve * in this [PR](https://github.com/typelevel/kind-projector/pull/91) to support Scala 3.0, you can still use ?.
@@ -136,7 +146,7 @@ enablePlugins(JavaAppPackaging)
 
 > Note: JavaAppPackaging will enable DockerPlugin automatically
 
-Add `docker.sbt` which is used to build docker image for our app which is just like a Dockerfile written by Scala.
+Add `docker.sbt` which is just like a Dockerfile written in Scala.
 
 ```scala
 import com.typesafe.sbt.packager.docker.Cmd
@@ -165,16 +175,19 @@ dockerEntrypoint := ???
 
 ## Pattern
 
-We tried Cake Pattern, Eff and Tagless Final in our projects, the winner is Tagless Final.
-But it's still hard to manage the dependency injection, we are trying to use Tagless Final and ReaderT pattern together.
+We tried [Cake Pattern](https://blog.shangjiaming.com/scala%20tutorial/cake-pattern/),
+[Eff](https://github.com/atnos-org/eff) and [Tagless Final](https://degoes.net/articles/zio-environment) in our projects, the winner is Tagless Final.
+But it's still hard to manage the dependency injection, we are trying to use Tagless Final and [ReaderT pattern](https://www.fpcomplete.com/blog/2017/06/readert-design-pattern/) together.
 
-In the future, we may try ZIO which is a combination of Tagless Final and ReaderT pattern.
+In the future, we may try [ZIO](https://github.com/zio/zio) which is a combination of Tagless Final and ReaderT pattern.
 
 ## Framework
 
 ### FP
 
-Definitely [cats](https://github.com/typelevel/cats), add the following line in `build.sbt` 
+Definitely [cats](https://github.com/typelevel/cats)
+
+Add the following line in `build.sbt` 
 
 ```scala
 libraryDependencies += "org.typelevel" %% "cats-core" % "2.1.1"
@@ -232,9 +245,9 @@ libraryDependencies += "org.flywaydb" % "flyway-core" % "7.1.1"
 ### No var
 
 We can modify a variable with var in any time without compiler warning,
-definitely should not use.
+definitely should not be used.
 
-Create a new instances with modified value instead.
+Create a new instance with modified value instead.
 
 ### No null
 
@@ -243,7 +256,7 @@ For a variable with given type,
 we don't know if it really store the value of given type or just `null`,
 which will confuse the meaning of type.
 
-Use Option if your function need to return `null`
+Use Option if your variable need to store `null`
 
 ### No Any
 
@@ -289,7 +302,7 @@ for expression is easier to read and maintain.
 
 `implicts` is a powerful tool, it is very easy to be abused.
 Most of time, it is `implicts` which make the code hard to read and maintain.
-It's also the biggest blocker for newbie to learn scala.
+It's also the biggest blocker for newbies to learn scala.
 
 Don't use it if possible except you can prove you have to do that.
 
@@ -336,13 +349,13 @@ Most of time, pattern-matching will be easier to read.
 
 For data type with sealed, compiler can help us to check if we cover all the branch
 
-### Use trait group implict instances and inject then into companion object
+### Use trait group implict instances and inject them into companion object
 
 For a data type `T`, we may have lots of implict instances, usually they can be grouped like this 
 
 * Instances
 
-  Defined some implict instances used by other components. 
+  Define some implict instances used by other components. 
 
   ```scala
   implict decoder: Decoder[T] = ???
@@ -366,7 +379,8 @@ For a data type `T`, we may have lots of implict instances, usually they can be 
 We don't want to import a package every time to use the implict instances.
 And according to the rule of implict, companion object is the fall back scope to find the implict instances of `T`.
 So it make sense to put all of them into companion object.
-We still want to group these instances better, so the pattern may be like this
+
+We still want to group these instances better, so the pattern may look like this
 
 ```scala
 trait TInstances {
@@ -392,10 +406,10 @@ object T extends TInstances with TSyntax
 `case class` is easier to be copied and can be used in pattern-matching.
 Most of time, algebraic data type are composed by `trait` and `case class`.
 
-### Don't use Option.get, List.head, Either.get, Try.get
+### Don't use Option.get, List.head, Either.get and Try.get
 
 These functions may throw exception and easy to be ignored,
-There are safer function like Option.getOrElse, List.headOption, Either.getOrElse, Try.getOrElse.
+There are safer function like `Option.getOrElse`, `List.headOption`, `Either.getOrElse` and `Try.getOrElse`.
 
 ### Use F[_], G[_], A, B, C as type parameter
 
@@ -403,9 +417,9 @@ Using a set of unified symbol as type parameter can make the code easier to read
 
 ### Use @tail-recursive annotation
 
-If we are wring a recursive function,
+If we are writing a recursive function,
 add `@tail-recursive` annotation,
-then compiler can help us to check if it is really a tail recursive.
+then compiler can help us to check if it is really a tail recursive function.
 
 # Test
 
@@ -422,6 +436,7 @@ mutable style is similar to other language and also our preffered style.
 
 ```scala
 import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
 class HelloSpec extends Specification {
   "Hello" should {
     "should print hello" in new Scope {
@@ -442,8 +457,9 @@ libraryDependencies ++= Seq(
 )
 ```
 
-specs2 also include mockito, but it doesn't support function default parameter and not good at fp.
-They also suggest us to use mockito-scala.
+specs2 also support mockito,
+but it doesn't support function with default parameter and not good at fp.
+[They also suggest us to use mockito-scala](https://github.com/etorreborre/specs2/issues/854#issuecomment-674999804).
 
 ## Test Coverage
 
@@ -455,10 +471,16 @@ Add the following line in `project/plugins.sbt`
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
 ```
 
+Generate coverage report when running test in `build.sbt`
+
+```scala
+addCommandAlias("TestWithCoverage", ";clean;coverage;test;coverageReport;coverageOff")
+```
+
 # Tips
 
 * Stay in the sbt console to run compile/test repeatedly, which is faster.
 * Use sbt instead of IntellJ IDEA to compile project, which will give more information.
 * Declare type explicitly if you can not understand the error message
-* Use ammonite-repl instead of scalac to run experiment code.
+* Use [ammonite-repl](https://ammonite.io/) instead of scalac to run experiment code.
 * Readable is more important than fantastic syntax.
