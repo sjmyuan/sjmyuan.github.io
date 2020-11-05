@@ -6,6 +6,8 @@ categories:
   - Scala Tutorial
 ---
 
+In this blog, I will share some practice in our project, hope this can help you.
+
 # Project Management
 
 ## Specify the sbt version
@@ -417,11 +419,16 @@ They also suggest us to use mockito-scala.
 
 [sbt-scoverage](https://github.com/scoverage/sbt-scoverage)
 
+Add the following line in `project/plugins.sbt`
+
 ```scala
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
 ```
 
 # Tips
 
-## Debug
-### Declare type explicitly if possible
+* Stay in the sbt console to run compile/test repeatedly, which is faster.
+* Use sbt instead of IntellJ IDEA to compile project, which will give more information.
+* Declare type explicitly if you can not understand the error message
+* Use ammonite-repl instead of scalac to run experiment code.
+* Readable is more important than fantastic syntax.
