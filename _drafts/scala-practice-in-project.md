@@ -42,7 +42,37 @@ Add the following line in `project/plugins.sbt`
 addSbtCoursier
 ```
 
-## Enforce style check
+## Apply code formatter 
+
+It's necessary to use unified code style across all team members, all IDE and all device.
+
+Add plugin [scalafmt](https://github.com/scalameta/scalafmt)
+
+```scala
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.0"
+```
+
+Add configuration `.scalafmt.conf`
+
+```scala
+version = 2.7.5
+```
+
+Check the code style before test
+
+```scala
+addCommandAlias("styleCheckAndTest", ";clean;scalafmtCheck;test")
+```
+
+Format code
+
+```sh
+sbt scalafmtAll
+```
+
+Config IntellJ to use scalafmt
+
+![](https://images.shangjiaming.com/3529c8fa-5197-4a56-92a4-491197285da1.jpeg)
 
 ## Optimise compiler option
 
