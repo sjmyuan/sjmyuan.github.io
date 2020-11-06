@@ -1,19 +1,19 @@
 ---
-title: Practice in Real Project
+title: Practice in Real Scala Project
 tags:
-  - Scala
+- Scala
 categories:
-  - Scala Tutorial
+- Scala Tutorial
+date: 2020-11-06 11:26 +0800
 ---
-
-In this blog, I will share some practice in our project, hope this can help you.
+In this blog, I will share some practice in our Scala project, hope this can help you.
 
 # Project Management
 
 ## Specify the sbt version
 
-We need the sbt version of given project to be always same on different device,
-then we can ensure the compiled jar of application are same between local development, release package and production.
+We need the sbt version of project to be always same on different device,
+then we can ensure the compiled jar of application are same between local, release and production.
 
 Like `.ruby-version`, `.python-version`, sbt can also specify the sbt version in `project/build.properties`
 
@@ -22,13 +22,13 @@ sbt.version=1.4.1
 ```
 
 It doesn't matter what's the sbt version in your local environment,
-sbt will always download the specified version for the given project.
+sbt will always download the specified version.
 
 ## Speed up dependency download
 
-sbt will download the dependencies in sequence which is very slow, it may take half hour.
+sbt will download dependencies in sequence which is very slow, it may take half hour.
 
-To speed up this process, we can use the plugin `sbt-coursier`.
+To speed up this process, we can use the plugin [sbt-coursier](https://github.com/coursier/sbt-coursier).
 
 To also speed up the plugin download, add the following line in `project/project/plugins.sbt`
 
@@ -42,7 +42,7 @@ Add the following line in `project/plugins.sbt`
 addSbtCoursier
 ```
 
-## Apply code formatter 
+## Apply code formatter
 
 It's necessary to use unified code style across all team members, all IDE and all device.
 
@@ -83,7 +83,7 @@ you can find the best practice in [scalac-flags](https://tpolecat.github.io/2017
 
 ### FP
 
-In FP code, sometimes we want to do some type projection to get partial applied type.
+In FP code, sometimes we need to do some type projection to get partial applied type.
 
 For example, We want all functions to return error or normal value, then we can define an unified return type.
 
@@ -94,7 +94,7 @@ type AppErrorOr[A] = Either[Throwable, A]
 But what if we have a function like this
 
 ```scala
-def identity[A, F[_]](value: F[A]): F[A] = value 
+def identity[A, F[_]](value: F[A]): F[A] = value
 ```
 
 And we want to apply it to `Either`
@@ -105,8 +105,9 @@ val either:Either[String, Int] = Right(1)
 identity(either) // can't be compiled
 ```
 
-Compiler tell us we need to give the type parameter explicitly.
-And we found it requires kind F[_], but Either is F[_, _].
+Compiler tell us we need to give the type parameter explicitly,
+But we found it requires kind F[\_], but Either is F[\_, \_].
+
 It's not possible to define a partial applied type explicitly every time.
 Here we need the type to be defined anonymously, lucklily Scala support it
 
@@ -114,7 +115,7 @@ Here we need the type to be defined anonymously, lucklily Scala support it
 identity[Int, ({type L[A] = Either[String, A]})#L](either) // success
 ```
 
-It's pretty hard and ugly to use this syntax, plugin [kind-projector](https://github.com/typelevel/kind-projector) give a better implmentation.
+It's pretty hard and ugly to use this syntax, plugin [kind-projector](https://github.com/typelevel/kind-projector) give a better implementation.
 
 ```scala
 identity[Int, Either[String, *]](either)
@@ -130,7 +131,7 @@ addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVers
 
 ### Package
 
-[sbt-native-packager](https://github.com/sbt/sbt-native-packager) can help us package our app, then build an docker image.
+[sbt-native-packager](https://github.com/sbt/sbt-native-packager) can help us to package our app, then build an docker image.
 
 Add the following line in `project/plugins.sbt`
 
@@ -160,7 +161,7 @@ dockerRepository := ???
 packageName in Docker := ???
 
 dockerCommands ++= Seq(
-  Cmd("ENV", s"""JAVA_OPTS="-javaagent:${(defaultLinuxInstallLocation in Docker).value}/newrelic/newrelic.jar -Xms1024m -Xmx1024m""""),
+  Cmd("ENV", s"""JAVA_OPTS="-Xms1024m -Xmx1024m""""),
   Cmd("RUN", s""" \\
                 | echo "RUN Command" \\
   """.stripMargin)
@@ -169,7 +170,7 @@ dockerCommands ++= Seq(
 dockerEntrypoint := ???
 ```
 
-> Note: we can also put the content of docker.sbt in build.sbt, they will be merged when we run sbt command.
+> Note: we can also put the content of docker.sbt in build.sbt. If we put it in docker.sbt, they will be merged when we run sbt command.
 
 # Coding
 
@@ -187,7 +188,7 @@ In the future, we may try [ZIO](https://github.com/zio/zio) which is a combinati
 
 Definitely [cats](https://github.com/typelevel/cats)
 
-Add the following line in `build.sbt` 
+Add the following line in `build.sbt`
 
 ```scala
 libraryDependencies += "org.typelevel" %% "cats-core" % "2.1.1"
@@ -279,9 +280,9 @@ Bad
 
 ```scala
 f1()
-  .flatMap(x1 => 
-    f2(x1).flatMap(x2 => 
-      f3(x2).flatMap(x3 => 
+  .flatMap(x1 =>
+    f2(x1).flatMap(x2 =>
+      f3(x2).flatMap(x3 =>
         f4(x3).map(x4 => x4))))
 ```
 
@@ -298,13 +299,14 @@ for {
 
 for expression is easier to read and maintain.
 
-### Use implicts cautiously
+### Use implicits cautiously
 
-`implicts` is a powerful tool, it is very easy to be abused.
-Most of time, it is `implicts` which make the code hard to read and maintain.
+`implicits` is a powerful tool, but it is very easy to be abused.
+
+Most of time, it is `implicits` which make the code hard to read and maintain.
 It's also the biggest blocker for newbies to learn scala.
 
-Don't use it if possible except you can prove you have to do that.
+Don't use it if possible, except you can prove you have to do that.
 
 ### Use pattern-matching instead of fold
 
@@ -317,7 +319,7 @@ a.fold(
    x1 <- f1()
    x2 <- f2(x1)
   } yield x2
-)(x => 
+)(x =>
   for {
     x3 <- f3(x)
     x4 <- f4(x3)
@@ -330,12 +332,12 @@ Good
 ```scala
 val a:Option[Int] = ???
 a match {
-case None => 
+case None =>
   for {
    x1 <- f1()
    x2 <- f2(x1)
   } yield x2
-case Some(x) => 
+case Some(x) =>
   for {
     x3 <- f3(x)
     x4 <- f4(x3)
@@ -349,51 +351,52 @@ Most of time, pattern-matching will be easier to read.
 
 For data type with sealed, compiler can help us to check if we cover all the branch
 
-### Use trait group implict instances and inject them into companion object
+### Use trait group implicit instances and inject them into companion object
 
-For a data type `T`, we may have lots of implict instances, usually they can be grouped like this 
+For a type `T`, we may have lots of implicit instances, usually they can be grouped like this
 
 * Instances
 
-  Define some implict instances used by other components. 
+  Define some implicit instances used by other components.
 
   ```scala
-  implict decoder: Decoder[T] = ???
-  implict ordering: Ordering[T] = ???
+  implicit val decoder: Decoder[T] = ???
+  implicit val ordering: Ordering[T] = ???
   ```
 
 * Syntax
 
-  Add more methods to the given type.
+  Add extra methods to the given type.
 
   ```scala
-  implict class TAddOps(v: T) {
+  implicit class TAddOps(v: T) {
     def add(other: T): T = ???
   }
 
-  implict class THttpOps(v: T) {
+  implicit class THttpOps(v: T) {
     def send: HttpResponse = ???
   }
   ```
 
-We don't want to import a package every time to use the implict instances.
-And according to the rule of implict, companion object is the fall back scope to find the implict instances of `T`.
+We don't want to import a package every time to use the implicit instances.
+
+According to the rule of implicit, companion object is the fall back scope to find the implicit instances of `T`.
 So it make sense to put all of them into companion object.
 
 We still want to group these instances better, so the pattern may look like this
 
 ```scala
 trait TInstances {
-  implict decoder: Decoder[T] = ???
-  implict ordering: Ordering[T] = ???
+  implicit decoder: Decoder[T] = ???
+  implicit ordering: Ordering[T] = ???
 }
 
 trait TSyntax {
-  implict class TAddOps(v: T) {
+  implicit class TAddOps(v: T) {
     def add(other: T): T = ???
   }
 
-  implict class THttpOps(v: T) {
+  implicit class THttpOps(v: T) {
     def send: HttpResponse = ???
   }
 }
@@ -404,14 +407,16 @@ object T extends TInstances with TSyntax
 ### Use case class instead of class if possible
 
 `case class` is easier to be copied and can be used in pattern-matching.
+
 Most of time, algebraic data type are composed by `trait` and `case class`.
 
 ### Don't use Option.get, List.head, Either.get and Try.get
 
 These functions may throw exception and easy to be ignored,
+
 There are safer function like `Option.getOrElse`, `List.headOption`, `Either.getOrElse` and `Try.getOrElse`.
 
-### Use F[_], G[_], A, B, C as type parameter
+### Use F[\_], G[\_], A, B, C as type parameter
 
 Using a set of unified symbol as type parameter can make the code easier to read.
 
@@ -458,7 +463,7 @@ libraryDependencies ++= Seq(
 ```
 
 specs2 also support mockito,
-but it doesn't support function with default parameter and not good at fp.
+but it doesn't support function with default parameter and not good at FP.
 [They also suggest us to use mockito-scala](https://github.com/etorreborre/specs2/issues/854#issuecomment-674999804).
 
 ## Test Coverage
@@ -481,6 +486,6 @@ addCommandAlias("TestWithCoverage", ";clean;coverage;test;coverageReport;coverag
 
 * Stay in the sbt console to run compile/test repeatedly, which is faster.
 * Use sbt instead of IntellJ IDEA to compile project, which will give more information.
-* Declare type explicitly if you can not understand the error message
+* Declare type explicitly if you can not understand the error message.
 * Use [ammonite-repl](https://ammonite.io/) instead of scalac to run experiment code.
-* Readable is more important than fantastic syntax.
+* Readability is more important than fantastic syntax.
