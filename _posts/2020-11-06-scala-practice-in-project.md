@@ -420,10 +420,10 @@ There are safer function like `Option.getOrElse`, `List.headOption`, `Either.get
 
 Using a set of unified symbol as type parameter can make the code easier to read.
 
-### Use @tail-recursive annotation
+### Use @tailrec annotation
 
 If we are writing a recursive function,
-add `@tail-recursive` annotation,
+add `@tailrec` annotation,
 then compiler can help us to check if it is really a tail recursive function.
 
 # Test
