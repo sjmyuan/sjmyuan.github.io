@@ -102,7 +102,7 @@ analytics:
 author:
   name             : "Jiaming Shang"
   avatar           : "/images/bio-photo.jpeg" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "Developer, currently focusing on Scala and DevOps"
+  bio              : "Developer, currently focusing on Functional Programming and DevOps"
   location         : "Xi'an China"
   email            : shangjiaming.yuan@gmail.com
   uri              :
