@@ -1,15 +1,15 @@
 ---
 title: Tagless Final
 tags:
-  - Scala
+- Scala
 categories:
-  - Scala Tutorial
+- Scala Tutorial
+date: 2021-06-02 13:20 +0800
 ---
-
 Tagless Final is a coding pattern in Scala. 
 
-I know you want to ask what is Tagless Final, It's a long story and won't block us to use it,
-So let's talk about it in the future(or you can read [Introduction to Tagless Final](https://serokell.io/blog/tagless-final) first).
+You may ask why it was called Tagless Final, it's a long story but won't block us to use it,
+so let's answer the question in the future(or you can read [Introduction to Tagless Final](https://serokell.io/blog/tagless-final) first).
 
 In this blog, we will focus on how to use it.
 
@@ -17,7 +17,7 @@ In this blog, we will focus on how to use it.
 
 Let's start from a simple requirement. 
 
-Say we have an api which can get a user by id, and to make it easy to track the operation, we want to log the id every time.
+Say we have an api which can get a user by id, and to make it easy to debug, we want to log the id every time.
 
 # Java implementation
 
@@ -36,10 +36,6 @@ class User {
   }
 }
 
-interface UserApi {
-  public User getUser(id: String);
-}
-
 interface Logger {
   public void info(message: String);
 }
@@ -50,17 +46,21 @@ class ConsoleLogger extends Logger {
   }
 }
 
+interface UserApi {
+  public User getUser(id: String);
+}
+
 class InMemoryUserApi implement UserApi {
   Logger logger;
   Map<String, User> cache;
 
   InMemoryUserApi(logger: Logger, cache: Map<String, User>) {
-   this.logger = logger;
-   this.cache = cache
+    this.logger = logger;
+    this.cache = cache
   }
 
   public User getUser(id: String) {
-    logger.info("Getting user by ${id}");
+    logger.info("Getting user by " + id);
     return cache.get(id);
   }
 }
@@ -73,23 +73,23 @@ It can be translated to Scala directly
 ```scala
 case class User(name: String, age: Int, id: String)
 
-trait UserApi {
-  def getUser(id: String): User
-}
-
 trait Logger {
   def info(message: String): Unit
 }
 
 class ConsoleLogger extends Logger {
   def info(message: String): Unit = {
-    System.out.println(message);
+    println(message)
   }
+}
+
+trait UserApi {
+  def getUser(id: String): User
 }
 
 class InMemoryUserApi(logger: Logger, cache: Map[String, User]) extends UserApi {
   def getUser(id: String): User = {
-    logger.info("Getting user by ${id}");
+    logger.info(s"Getting user by ${id}")
     cache.get(id)
   }
 }
@@ -97,17 +97,16 @@ class InMemoryUserApi(logger: Logger, cache: Map[String, User]) extends UserApi 
 
 # Pure implementation
 
-You may noticed the function `getUser` and `info` is not pure. 
+You may notice the function `getUser` and `info` have side effect(console output and exception). 
 To make them pure, we need to involve some higher-kind type to express the side effect, such as `Option`, `Either` or `IO` etc.
 
-We can use `F[_]` to stand for them and call it as effect in the following part. then the code become
+We use `F[_]` to stand for them here and call it as effect in the following part. 
+
+Then the code become
 
 ```scala
 case class User(name: String, age: Int, id: String)
 
-trait UserApi[F[_]] {
-  def getUser(id: String): F[User]
-}
 
 trait Logger[F[_]] {
   def info(message: String): F[Unit]
@@ -115,13 +114,17 @@ trait Logger[F[_]] {
 
 class ConsoleLogger[F[_]] extends Logger[F] {
   def info(message: String): F[Unit] = {
-    // System.out.println(message);
+    // println(message)
   }
+}
+
+trait UserApi[F[_]] {
+  def getUser(id: String): F[User]
 }
 
 class InMemoryUserApi[F[_]](logger: Logger[F], cache: Map[String, User]) extends UserApi[F] {
   def getUser(id: String): F[User] = {
-    // logger.info("Getting user by ${id}");
+    // logger.info("Getting user by ${id}")
     // cache.get(id)
   }
 }
@@ -148,24 +151,25 @@ There are two questions here
     def info[F[_]](message: String)(implicit M: Monand[F]): F[Unit]
     ```
 
-    And it's hard to maintain the code if the effects are different between functions in one class.
+    And it's hard to maintain the code if the effects are different in one class.
 
 2. How to re-implement the logic by `F[_]`
 
-    We need to make all the function pure.
-    In FP, to make a log operation pure, we can use type class `Sync` of `F[_]`
+    We need to make all the function pure, 
+    so we need the type class of `F[_]` which can be injected by context bound.
+
+    We can use  `Sync` of `F[_]` to print log without side effect.
 
     ```scala
     class ConsoleLogger[F[_]:Sync] extends Logger[F] {
       def info(message: String): F[Unit] = {
-        Sync[F].delay(System.out.println(message));
+        Sync[F].delay(println(message));
       }
     }
     ```
 
-    To chain the pure expression, we can use type class `Monad` of `F[_]`. 
-    Because `Sync` is a `Monad` and we also need to use `Sync` in other place,
-    We can just involve `Sync`.
+    We can use  `Monad` of `F[_]` to chain expression. 
+    `Sync` is also a `Monad`, we can still use `Sync` here.
 
     ```scala
     class InMemoryUserApi[F[_]:Sync](logger: Logger[F], cache: Map[String, User]) extends UserApi[F] {
@@ -189,32 +193,33 @@ def main()= {
 ```
 
 We choose `IO` to be `F[_]` in main,
-because `IO` already implemented the type class `Sync`, which is the minimum requirement of `F[_]` to implement the logic.
+because `IO` already implemented the type class `Sync`, which is the minimum requirement of implementation.
 
-Why not use `IO` directly? 
+There may be more questions here
 
-Why should we only involve the minimum requirement of `F[_]`?
+1. Why not use `IO` directly in implementation? 
 
-Could we use `Sync` everywhere?
+    If we use `IO` directly, we can not use other effect in the future, for example `Task` or `ZIO`.
 
-There may be lots of questions in our mind.
+    But to be honest, it's unlikely to happen in real system.
 
-If we use `IO` directly, what if we want to use other effect in the future? for example `Task` or `ZIO`.
-what if some team member just wrap all the code in one `IO`? it is valid for compiler but we know it's a very bad code.
+2. Why should we only involve the minimum requirement of `F[_]`?
 
-So there are two benefits by choosing the effect in main 
+    If we use `Sync` everywhere for example, 
+    we can not prevent some team member from wrapping all the code in one `Sync.delay`, which is valid for compiler but a very bad code.
 
-1. Change the effect easily in the future
-2. Only inject required dependencies(type class) to class
+    We'd better just inject the dependencies required by implementation.
 
-Even it's unlikely to change the effect in the future, it's still worth to use it to manage dependencies.
+If your project complexity is low and team member don't have enough experience, 
+I think it's ok to use an effect directly in implementation which is happening in my project.
 
 # Summary
 
-Ok, let's give a simple definition of Tagless Final to help us to understand it
+Ok, let's give a simple definition of Tagless Final to help us understand it(not accurate but easier to understand)
 
 > Tagless Final is just OO + Effect
 
 We can use normal OO technique to compose our code,
-but remember to add an effect to every Interface/Class 
-and utilize the existing type class of effect to make the function pure.
+but remember to add effect to Interface/Class,
+and inject the required type class by context bound,
+then utilize them to make the function pure.
