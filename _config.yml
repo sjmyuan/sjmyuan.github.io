@@ -130,6 +130,13 @@ author:
   weibo            :
   xing             :
   youtube          : # "https://youtube.com/c/MichaelRoseDesign"
+  links:
+    - label: "WeChat Public Account"
+      icon: "fab fa-weixin"
+      url: "https://images.shangjiaming.com/33298935-ccac-435c-a775-391810017ed4.jpeg"
+    - label: "About Me"
+      icon: "fas fa-id-card"
+      url: "https://resume.shangjiaming.com"
 
 
 # Reading Files
