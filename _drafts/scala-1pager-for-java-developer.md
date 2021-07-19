@@ -113,7 +113,7 @@ trait UserRepository[M[_]] {
  def getUser(id: String): M[User]
 }
 
-class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
+class HttpUserRepository[M[_]: Sync](httClient: Client[M]) { // httpClient is dependency
   def getUser(id: String): M[User] = httClient.get[User](s"https://example.com/${id}")
 }
 ```
@@ -136,14 +136,76 @@ class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
 
 ## How to return pure value?
 
+```scala
+trait UserRepository[M[_]] {
+ def getUser(id: String): M[User]
+}
+
+class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
+  def getUser(id: String): M[User] = if(id.empty) {
+      Sync[M].pure(User(name="default"))      
+    }else {
+      httClient.get[User](s"https://example.com/${id}")
+    }
+}
+```
+
 ## How to invoke unsafe function?
 
+```scala
+trait UserRepository[M[_]] {
+ def getUser(id: String): M[User]
+}
+
+class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
+  def getUser(id: String): M[User] = if(id.empty) {
+      for {
+        _ <- Sync[M].delay(println("return default user"))
+      } yield User(name="default")
+    }else {
+      httClient.get[User](s"https://example.com/${id}")
+    }
+}
+```
 
 ## How to instance dependency?
 
+```scala
+object Main extends IOApp {
+ def run():ExitCode = {
+   ...
+
+   val httpClient = ???
+   val userRepository = new HttpUserRepository(httpClient)
+
+   ...
+ }
+}
+```
+
 ## How to adapt error type?
 
+```scala
+trait UserRepository[M[_]] {
+ def getUser(id: String): M[User]
+}
+
+class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
+  def getUser(id: String): M[User] = if(id.empty) {
+      for {
+        _ <- Sync[M].delay(println("return default user"))
+      } yield User(name="default")
+    }else {
+      httClient.get[User](s"https://example.com/${id}").adapt( ??? ) // TODO
+    }
+}
+```
+
 ## How to return Option?
+
+```scala
+class 
+```
 
 ## How to return Either?
 
