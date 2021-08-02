@@ -37,6 +37,14 @@ add(1)
 add(1)(5)
 ```
 
+### Difference
+
+* Replace `implicit` with `using` in function parameter
+* Replace `implicit val` with `given` in instance definition
+
+With these changes, the code readability is improved and the `implicit` word will not confuse us.
+
+
 ## How to use context bound?
 
 ### Scala2
@@ -74,6 +82,10 @@ given intShow: Show[Int] with {
 printListWithUsing(List(1, 2, 3, 4))
 printListWithContextBound(List(1, 2, 3, 4))
 ```
+
+### Difference
+
+Except the `given/using` changes, the context bound is same as Scala2
 
 ## How to add function to existing class?
 
@@ -127,4 +139,21 @@ given listShow[A: Show]: Show[List[A]] with {
 
 1.show()
 List(1, 2, 3).show()
+```
+
+### Difference
+
+In Scala2, we usually define a type class first, then use a implicit class to add the function to existing type.
+In Scala3, it become straightforward, use a new keyword `extension` to do that. 
+The magic thing is all the method in `extension` will be translated to a function, the following two expression are equal
+
+```scala
+extension(v: Int) {
+  def show():String = v.toString
+}
+
+// equals to def show()(v: Int) = v.toString
+
+1.show()
+show()(1)
 ```
