@@ -1,19 +1,20 @@
 ---
-title: Scala3 Implicits
+title: Scala3 Implicit
 tags:
 - Scala3
 date: 2021-08-03 22:22 +0800
 ---
-Scala3 did lots of improvement in Implicits, which is most painful feature in Scala2.
 
-The quick summary is
+Scala3 did lots of improvement in Implicits, which is the most painful feature in Scala2.
 
-* Improve the error log to help developer find the correct implict instance.
-* Split the implicits feature into given/using and extension to make the feature more clear.
+A quick summary is
 
-Now let's have a taste of these feature.
+* Improve the error log to help the developer find the correct implicit instance.
+* Split the implicit feature into given/using and extension to make the feature more clear.
 
-## How pass parameter implicitly?
+Now let's have a taste of these features.
+
+## How to pass parameters implicitly?
 
 ### Scala2 
 
@@ -41,7 +42,7 @@ add(1)(using 5) // :Int = 6
 
 * Replace `implicit` with `using` in function parameter
 * Replace `implicit val` with `given` in instance definition
-* Use 'using' explicitly when giving explicit value
+* Use `using` explicitly when giving explicit value
 
 With these changes, the code readability is improved. 
 At least we can search `given` to find the implicit instances and search `using` to find the implicit parameters. 
@@ -94,10 +95,10 @@ printListWithContextBound(List(1, 2, 3, 4)) // :String = "1;2;3;4"
 
   ```scala
   implicit val intShow: Show[Int] = new Show[Int] { ... } // Scala2
-  give intShow: Show[Int] with { ... } // Scala3
+  given intShow: Show[Int] with { ... } // Scala3
   ```
 
-## How to add function to existing class?
+## How to add function to an existing class?
 
 ### Scala2
 
@@ -125,14 +126,6 @@ List(1, 2, 3).show() // :String = "1;2;3"
 ### Scala3
 
 ```scala
-extension(v: Int){
- def show(): String = v.toString
-}
-
-1.toString
-```
-
-```scala
 trait Show[A] {
  extension (v: A) {
    def show(): String
@@ -157,9 +150,11 @@ List(1, 2, 3).show() // :String = "1;2;3"
 
 ### Difference
 
-In Scala2, we usually define a type class first, then use a implicit class to add the function to existing type.
-In Scala3, it become straightforward, use a new keyword `extension` to do that. 
-The magic thing is all the method in `extension` will be translated to a function, the following two expression are equal
+In Scala2, we usually define a type class first, then use an implicit class to add the function to the existing type.
+
+In Scala3, it becomes straightforward, use a new keyword `extension` to do that. 
+
+The magic thing is all the methods in `extension` will be translated to functions, the following two expressions are equal
 
 ```scala
 extension(v: Int) {
@@ -168,8 +163,8 @@ extension(v: Int) {
 
 // equals to def demo(v: Int)() = v.toString
 
-1.demo()
-demo(1)()
+1.demo() // :String = 1
+demo(1)() // :String = 1
 ```
 
 ## Summary
