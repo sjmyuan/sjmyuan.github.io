@@ -1,9 +1,9 @@
 ---
 title: Scala3 Implicits
 tags:
-  - Scala3
+- Scala3
+date: 2021-08-03 22:22 +0800
 ---
-
 Scala3 did lots of improvement in Implicits, which is most painful feature in Scala2.
 
 The quick summary is
