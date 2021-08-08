@@ -1,7 +1,7 @@
 ---
 title: Scala 1Pager for Java Developer
 tags:
-- Scala
+  - Scala
 ---
 
 The purpose of this blog is to help Java Developer contribute qualified Scala code in 2 weeks.
@@ -26,7 +26,7 @@ val mapVar: Map[String, Int] = Map("hello" -> 1, "world" -> 2)
 val tupleVar: (String, Int) = ("hello", 1)
 
 // trait DemoTrait {....}
-val traitVar: DemoTrait = new DemoTrait{} 
+val traitVar: DemoTrait = new DemoTrait{}
 
 // class DemoClass(name:String) {....}
 val classVar: DemoClass = new DemoClass(name = "Tom")
@@ -42,7 +42,7 @@ val functionVar: Int => Int = (x:Int) => x +1
 ```scala
 for {
  ...
- classVar = new DemoClass(name = "Tom") 
+ classVar = new DemoClass(name = "Tom")
  ...
 } yield ...
 ```
@@ -127,7 +127,7 @@ trait UserRepository[M[_]] {
 
 class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
   def getUser(id: String): M[User] = if(id.empty) {
-      Sync[M].raiseError("The id should not be empty")      
+      Sync[M].raiseError("The id should not be empty")
     }else {
       httClient.get[User](s"https://example.com/${id}")
     }
@@ -143,7 +143,7 @@ trait UserRepository[M[_]] {
 
 class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
   def getUser(id: String): M[User] = if(id.empty) {
-      Sync[M].pure(User(name="default"))      
+      Sync[M].pure(User(name="default"))
     }else {
       httClient.get[User](s"https://example.com/${id}")
     }
@@ -204,20 +204,46 @@ class HttpUserRepository[M[_]: Sync](httClient: Client[M]) {
 ## How to return Option?
 
 ```scala
-class 
+import cats.implicits._
+import cats.effect.Sync
+import cats.effect.IO
+
+def getFirstElement[M[_]: Sync](list: List[String]): M[String] = {
+  Sync[M].fromOption(list.headOption, new Error("The list is empty"))
+}
+
+getFirstElement[IO](List()).attempt.unsafeRunSync() // :Either[Throwable, String] = Left(value = java.lang.Error: The list is empty)
+getFirstElement[IO](List("1", "2")).unsafeRunSync() // :String = "1"
 ```
 
 ## How to return Either?
+
+```scala
+import cats.implicits._
+import cats.effect.Sync
+import cats.effect.IO
+
+def add[M[_]: Sync](x: String, y: String): M[Int] = for {
+  xInt <- Sync[M].fromEither(Either.catchNonFatal(x.toInt))
+  yInt <- Sync[M].fromEither(Either.catchNonFatal(y.toInt))
+} yield xInt + yInt
+
+add[IO]("1", "2").unsafeRunSync() // :Int = 3
+add[IO]("a", "2").attempt.unsafeRunSync() // :Either[Throwable, Int] = Left(value = java.lang.NumberFormatException: For input string: "a")
+```
 
 # Flow Control
 
 ## How to check Option value?
 
+```scala
+```
+
 ## How to check Either value?
 
 ## How to check List value?
 
-## How to compose multile expression?
+## How to compose multiple expression?
 
 # Library
 
@@ -246,4 +272,3 @@ class
 ## How to test expected value?
 
 ## How to mock service/repository?
-
