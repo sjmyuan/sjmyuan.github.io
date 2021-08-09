@@ -237,13 +237,69 @@ add[IO]("a", "2").attempt.unsafeRunSync() // :Either[Throwable, Int] = Left(valu
 ## How to check Option value?
 
 ```scala
+def checkOption(x: Option[String]): String = {
+  x match {
+    case None => "empty value"
+    case Some(v) => v
+  }
+}
+
+checkOption(Some("hello world")) // :String = "hello world"
+checkOption(None) // :String = "empty value"
 ```
 
 ## How to check Either value?
 
+```scala
+def checkEither(x: Either[String, Int]): String = {
+  x match {
+    case Left(e)  => s"left is ${e}"
+    case Right(v) => s"right is ${v}"
+  }
+}
+
+checkEither(Left("Something wrong")) // :String = "left is Something wrong"
+checkEither(Right(1)) // :String = "right is 1"
+```
+
 ## How to check List value?
 
+```scala
+def checkList(list: List[String]): String = list match {
+  case head :: Nil => s"There is only one element ${head}"
+  case first :: second :: tail =>
+    s"There are more than 2 elements and the first one is ${first} and the second one is ${second}"
+  case List(x, y, z) =>
+    s"There are exact 3 element, first is ${x}, second is ${y}, third is ${z}"
+  case _ => "No match"
+}
+
+checkList(List("hello"))
+// res0: String = "There is only one element hello"
+checkList(List("hello", "world"))
+// res1: String = "There are more than 2 elements and the first one is hello and the second one is world"
+checkList(List("hello", "world", "Ha ha"))
+// res2: String = "There are more than 2 elements and the first one is hello and the second one is world"
+checkList(List("hello", "world", "Ha ha", "no match"))
+// res3: String = "There are more than 2 elements and the first one is hello and the second one is world"
+```
+
 ## How to compose multiple expression?
+
+```scala
+def composeExpression(
+    f1: () => Either[String, Int],
+    f2: () => Either[String, Int]
+): Either[String, Int] = for {
+  x1 <- f1()
+  x2 <- f2()
+} yield x1 + x2
+
+composeExpression(() => Left("Something wrong"), () => Right(1))
+// res6: Either[String, Int] = Left(value = "Something wrong")
+composeExpression(() => Right(1), () => Right(1))
+// res7: Either[String, Int] = Right(value = 2)
+```
 
 # Library
 
