@@ -95,8 +95,8 @@ If you can't get the public IPv4 address like me, don't worry, we still have IPv
 
 ### Availability Checking
 
-1. Nextwork provider
-2. Home Router support IPv6 and won't block IPv6 request
+1. Network provider
+2. Router support IPv6 and won't block IPv6 request
 ### Docker
 
 To make Docker support IPv6, first we need to add the following configuration to docker config
@@ -120,9 +120,51 @@ Actually there is a risk to allow all traffic, we just want to all traffic from 
 
 ## DDNS and AWS Route53
 
-Sometimes Network provider won't supply the static IPv6 or IPv4 address, the address will be refreshed after a period, so we need a DDNS service to make sure our address is always correct.
+Sometimes our network provider won't supply the static IPv6 or IPv4 address, the address will be refreshed periodically, so we need a DDNS service to make sure our address is always correct.
+
+Here we use `crazymax/ddns-route53` to implement DDNS on AWS Route53
+
+```yaml
+  ddns-route53:
+    image: crazymax/ddns-route53:latest
+    container_name: ddns-route53
+    environment:
+      - "TZ=Asia/Shanghai"
+      - "SCHEDULE=*/30 * * * *"
+      - "LOG_LEVEL=info"
+      - "LOG_JSON=false"
+      - "DDNSR53_CREDENTIALS_ACCESSKEYID=<access key id>
+      - "DDNSR53_CREDENTIALS_SECRETACCESSKEY=<secret access key>
+      - "DDNSR53_ROUTE53_HOSTEDZONEID=<host zone id>
+      - "DDNSR53_ROUTE53_RECORDSSET_0_NAME=<domain name>"
+      - "DDNSR53_ROUTE53_RECORDSSET_0_TYPE=<AAAA for IPv6, A for IPv4>"
+      - "DDNSR53_ROUTE53_RECORDSSET_0_TTL=300"
+    restart: always
+```
 
 ## rclone
 
-# Summary
+We can not trust an old laptop, so we'd better backup our data to some remote storage, such as S3, Box, Google Drive, etc.
 
+Here we use [rclone](https://rclone.org/) on the host to backup the data to AWS S3, which is easier than the docker solution. 
+
+1. Install the rclone on your computer according to the [installation documentation](https://rclone.org/install/#script-installation)
+2. Configure your AWS credentials according to the [AWS S3 Remote documentation](https://rclone.org/s3/#amazon-s3).
+3. Configure cron job to back up your file periodically
+   
+   We need to back up all the volume of our docker compose, here we just simple back up all the files in our work directory of Nextcloud.
+
+   ```sh
+    #!/bin/bash
+
+    if pidof -o %PPID -x “rclone-cron.sh”; then # we assume the file name is rclone-cron.sh
+    exit 1
+    fi
+    rclone sync --size-only --fast-list --s3-no-head <nextcloud work directory> <rclone remote>:<remote s3 bucket>
+    exit
+   ```
+
+   ```sh
+   # back up at 1:00AM
+   0 1 * * * <rclone-cron.sh path> >/dev/null 2>&1
+   ```
