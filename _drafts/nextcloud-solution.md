@@ -6,9 +6,9 @@ tags:
 
 # Why
 
-I always wanted to have a personal home server to store family's files and photos.
+I always wanted to have a personal home server to store family photos.
 
-There are some off-the-self solutions, Synology for example. But it's too expensive to spend more than 2000￥ to store files. 
+There are some off-the-self solutions, Synology for example. But it's too expensive to spend more than 2000￥ to store photos. 
 
 Considering I have a laptop which is almost 10 years old but has 1T storage, I try to build one by myself.
 
@@ -111,12 +111,13 @@ Then we need to enable the IPv6 network in docker compose
 
 ### Firewall
 
-Usually linux system will block all IPv6 income traffic, we can use the following command to allow the traffic
+Usually linux system will block all IPv6 income traffic, we can use the following command to stop the firewall
 
 ```sh
+udo systemctl stop firewalld.service
 ```
 
-Actually there is a risk to allow all traffic, we just want to all traffic from given port, if you familiar with the command please let me know.
+Actually it's dangerous to disable the firewall, we just want to all traffic from given port, if you familiar with the command please let me know.
 
 ## DDNS and AWS Route53
 
