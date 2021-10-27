@@ -11,7 +11,7 @@ I already created a repo [my-nextcloud](https://github.com/sjmyuan/my-nextcloud)
 
 I always wanted to have a personal home server to store family photos.
 
-There are some business solutions, Synology, Box, Google Drive for example, But it's too expensive for me.
+There are some business solutions, Synology, Box, Google Drive for example. But it's too expensive for me.
 
 Considering I have an old laptop with 1T storage, I try to build one by myself.
 
@@ -25,13 +25,13 @@ My requirements for the home server are
 4. Internet access
 5. Dockerized
 
-So my solution are Docker + Nextcloud + rclone + IPv6 + DDNS + AWS Route53 + AWS S3
+So my solution is Docker + Nextcloud + rclone + IPv6 + DDNS + AWS Route53 + AWS S3
 
 # How
 
 ## Nextcloud
 
-Nextcloud already supplied an [docker-compose example](https://github.com/nextcloud/docker/blob/master/.examples/docker-compose/with-nginx-proxy/mariadb/apache/docker-compose.yml) to set up everything, including database, cron job, Nextcloud app, proxy, and HTTPS.
+Nextcloud already supplied a [docker-compose example](https://github.com/nextcloud/docker/blob/master/.examples/docker-compose/with-nginx-proxy/mariadb/apache/docker-compose.yml) to set up everything, including database, cron job, Nextcloud app, proxy, and HTTPS.
 
 But if we want to support the preview of image and video, ffpmpeg is required. So we need to build our Nextcloud image like this:
 
@@ -95,9 +95,9 @@ Then we can use `docker-compose up -d` to start Nextcloud as a background proces
 
 ## IPv6
 
-If you already have the public IPv4 address, congratulation, [bunch of apps](https://apps.nextcloud.com/) are ready for you.
+If you already have a public IPv4 address, congratulation, [bunch of apps](https://apps.nextcloud.com/) are ready for you.
 
-If you can't get the public IPv4 address like me, don't worry, we still have IPv6.
+If you can't get a public IPv4 address like me, don't worry, we still have IPv6.
 ### Availability Checking
 
 First of all, you need to check if IPv6 is available
@@ -105,11 +105,11 @@ First of all, you need to check if IPv6 is available
 1. Your network provider support IPv6
 2. Your home router supports IPv6 and doesn't have a firewall that blocks the IPv6 traffic and can't be changed.
 
-Personally, my network provider supported IPv6, but my home router is too old and doesn't support IPv6, then I have to buy a new one, TP-Link AX5400, the biggest investment for me.
+Personally, my network provider supports IPv6, but my home router is too old to support IPv6, then I have to buy a new one, TP-Link AX5400, the biggest investment for me.
 
 ### Docker
 
-To make Docker support IPv6, first, we need to add the following configuration to docker config `/etc/docker/daemon.json`
+To make Docker support IPv6, first, we need to add the following configuration to docker engine config `/etc/docker/daemon.json`
 
 ```json
 {
