@@ -15,15 +15,16 @@ I developed a scala log library [jlogger](https://github.com/sjmyuan/jlogger), y
 ```
 
 ## Features
-* Type safe and based on [cats](http://typelevel.org/cats/)
+
+* Typesafe and based on [cats](http://typelevel.org/cats/)
 * Support log level
 * Support maximum 5 arbitrary data attributes
-* Support JSON and String format
+* Support JSON format
 * Support logback and self4j
 
 # Why
 
-Our team use [Splunk](https://www.splunk.com/) to collect and analyze log, it support JSON very well, so we'd like to print our log in JSON format.
+Our team use [Splunk](https://www.splunk.com/) to collect and analyze log, it supports JSON very well, so we'd like to print our log in JSON format.
 
 # How
 
@@ -33,8 +34,9 @@ A picture is worth a thousand words
 
 ## Overloading functions
 
-Apart from description, log level and timestamp, we usually want to include some key data to help analysis.
-We can concat them to a single string, then print them. This is the most common way we can see now.
+Apart from the description, log level, and timestamp, we usually want to include some key data to help analysis.
+
+We can concat them to a single string, then print it, which is the most common way we can see now.
 
 ```scala
 val name = "Tom"
@@ -43,7 +45,7 @@ val age = 10
 logger.info(s"Got request from ${name} who is ${age} years old.") // Got request from Tom who is 10 years old.
 ```
 
-But I'm too lazy to do this by myself, I want the library to help me, then I can pass the key data
+But we are too lazy to do this by ourselves, it will be awesome if the logger can do it like this.
 
 
 ```scala
@@ -59,33 +61,33 @@ The easiest solution is to pass a map or list
 logger.info("Got request", Map("name" -> name, "age" -> age))
 ```
 
-There are two problems about this
+But there are two problems
 
 * not idle, always need to type Map constructor
 * can't support data with different types
 
-For type problem, we will discuss in next section. 
+For type problem, we will discuss it in the next section. 
 
-For Map constructor, considering we usually won't pass too many key data(5 at most in our team), I use the overloading function to solve this
+For Map constructor, considering we usually won't pass too many key data(5 at most in our team), we use the overloading functions to solve it
 
 ```scala
-  final def info[A](description: String, data: (String, A)): M[Unit]
-  final def info[A1, A2](description: String, data1: (String, A1), data2: (String, A2)): M[Unit]
-  final def info[A1, A2, A3](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3)): M[Unit]
-  final def info[A1, A2, A3, A4](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4)): M[Unit]
-  final def info[A1, A2, A3, A4, A5](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4), data5: (String, A5)): M[Unit]
+final def info[A](description: String, data: (String, A)): M[Unit]
+final def info[A1, A2](description: String, data1: (String, A1), data2: (String, A2)): M[Unit]
+final def info[A1, A2, A3](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3)): M[Unit]
+final def info[A1, A2, A3, A4](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4)): M[Unit]
+final def info[A1, A2, A3, A4, A5](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4), data5: (String, A5)): M[Unit]
 ```
 
 ## Formatter
 
-Now let's fix the type problem.
+Now let's solve the type problem.
 
 Let's review what's the step to print a log:
 1. Give a description to explain what's going on
-2. Convert the key data to some data type which can be converted to string, usually we will use string directly.
+2. Convert the key data to a target type that can be converted to a string, usually, we will use string directly.
 3. Concat them together and pass the string to logger
 
-We can do something in step 2 to tell the logger how to convert the data to the given type. This is the purpose of `Formatter`
+We can do something in step 2 to tell the logger how to convert the data to the target type. This is the purpose of `Formatter`
 
 ```scala
 trait Formatter[A, B] {
@@ -96,27 +98,27 @@ trait Formatter[A, B] {
 Because we want to print log in JSON format, we can define a formatter based on circe like this:
 
 ```scala
-  implicit def generateJsonFormatter[A: Encoder]: Formatter[A, Json] =
-    new Formatter[A, Json] {
-      def format(key: String, value: A): Json = Json.obj(key -> value.asJson)
-    }
+implicit def generateJsonFormatter[A: Encoder]: Formatter[A, Json] =
+  new Formatter[A, Json] {
+    def format(key: String, value: A): Json = Json.obj(key -> value.asJson)
+  }
 ```
 
-Then we can pass the formatter to the logger to tell them how to convert the data to the target type(B in this example)
+Then we can pass the `Formatter` to the logger to tell it how to convert the data to the target type(B in this example)
 
 ```scala
-  final def info[A: Formatter[*, B]](description: String, data: (String, A)): M[Unit]
-  final def info[A1: Formatter[*, B], A2: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2)): M[Unit]
-  final def info[A1: Formatter[*, B], A2: Formatter[*, B], A3: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3)): M[Unit]
-  final def info[A1: Formatter[*, B], A2: Formatter[*, B], A3: Formatter[*, B], A4: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4)): M[Unit]
-  final def info[A1: Formatter[*, B], A2: Formatter[*, B], A3: Formatter[*, B], A4: Formatter[*, B], A5: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4), data5: (String, A5)): M[Unit]
+final def info[A: Formatter[*, B]](description: String, data: (String, A)): M[Unit]
+final def info[A1: Formatter[*, B], A2: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2)): M[Unit]
+final def info[A1: Formatter[*, B], A2: Formatter[*, B], A3: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3)): M[Unit]
+final def info[A1: Formatter[*, B], A2: Formatter[*, B], A3: Formatter[*, B], A4: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4)): M[Unit]
+final def info[A1: Formatter[*, B], A2: Formatter[*, B], A3: Formatter[*, B], A4: Formatter[*, B], A5: Formatter[*, B]](description: String, data1: (String, A1), data2: (String, A2), data3: (String, A3), data4: (String, A4), data5: (String, A5)): M[Unit]
 ```
 
 ## JLogger
 
-Now we can get a list of target type(B in the last section), which is converted from key data, how do we convert them to a single log message?
+Now we can get a list of data with target type(B in the last section), which are converted from key data, how do we convert them to a single log message?
 
-In `JLogger`, I require the target type to implement the `Monoid` type class, then we can combine them to a single target type.
+In `JLogger`, we require the target type to implement the `Monoid` type class, then we can combine them to a single target type.
 
 ```scala
 abstract class JLogger[M[_]: Monad, B: Monoid](implicit
@@ -126,10 +128,10 @@ abstract class JLogger[M[_]: Monad, B: Monoid](implicit
 ) { ... }
 ```
 
-Then we define a abstract function to allow child classes to convert the target type to a single log message and print it.
+And we define an abstract function to allow child classes to convert the target type to a single log message and print it.
 
 ```scala
-  def log(logLevel: LogLevel, attrs: B): M[Unit]
+def log(logLevel: LogLevel, attrs: B): M[Unit]
 ```
 
 
