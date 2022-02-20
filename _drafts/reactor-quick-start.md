@@ -12,9 +12,9 @@ header:
 
 > [Reactor](https://projectreactor.io/) is a fully non-blocking reactive programming foundation for the JVM, with efficient demand management (in the form of managing “backpressure”).
 
-Seems it's very hard, but we can only use 20% of its feature to implement almost 80% work.
+Seems it's very hard, but it follows the [Pareto principle](https://en.wikipedia.org/wiki/Pareto_principle), we just use 20% of its features in our daily work. 
 
-In my current project, we don't touch `backpressure` any more, most of the operations we used are
+In my current project, we haven't touched `backpressure` anymore, most of the operations we used are
 
 - (Flux|Mono).just
 - (Flux|Mono).map
@@ -22,7 +22,7 @@ In my current project, we don't touch `backpressure` any more, most of the opera
 - (Flux|Mono).onErrorResume
 - (Flux|Mono).filter
 
-So don't be scared about it, after reading this blog, you can also use it easily in you project.
+So don't be scared about it, after reading this blog, you can also use it easily in your project.
 
 # How to install?
 
@@ -71,7 +71,7 @@ Reactor supplied a test library to help us to test Flux|Mono, we can use `StepVe
            .verifyErrorMessage("some error");
   ```
 
-- Verify end of sequence
+- Verify the end of sequence
 
   ```java
     StepVerifier.create(Flux.empty()).verifyComplete();
@@ -91,7 +91,7 @@ There are two basic concepts in reactor
 
   A sequence of data, there is 0 or 1 element
 
-# What we need to know to do most of the work?
+# What's the 20% features we need to know?
 
 In this section, I will borrow some concepts to group the examples
 
@@ -128,7 +128,7 @@ In this section, I will borrow some concepts to group the examples
 
     ```java
         @Test
-        public void canBeCreatedFromString() { //TODO add test in mono example
+        public void canBeCreatedFromString() {
             StepVerifier.create(Mono.just("hello world")).expectNext("hello world").verifyComplete();
         }
     ```
@@ -149,7 +149,7 @@ In this section, I will borrow some concepts to group the examples
 
     ```java
         @Test
-        public void canBeCreatedFromNumber() { //TODO add test in mono example
+        public void canBeCreatedFromNumber() {
             StepVerifier.create(Mono.just(1)).expectNext(1).verifyComplete();
             StepVerifier.create(Mono.just(1.0)).expectNext(1.0).verifyComplete();
         }
@@ -385,7 +385,7 @@ If there is a function A -> (Flux|Mono)<B>, A is the element type of Flux|Mono, 
         }
     ```
 
-### How to replace with another Flux|Mono if there is no data?
+### How to replace current Flux|Mono with another Flux|Mono if there is no data?
 
 - Flux
 
