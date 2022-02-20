@@ -331,9 +331,9 @@ If there is a function A -> B, A is the element type of Flux\|Mono, and B is not
         }
     ```
 
-### How to apply a function A -> (Flux\|Mono)<B>?
+### How to apply a function A -> (Flux\|Mono)\<B\>?
 
-If there is a function A -> (Flux\|Mono)<B>, A is the element type of Flux\|Mono, we can use `(Flux|Mono).flatMap` or `Mono.flatMapMany` to apply the function to each element.
+If there is a function A -> (Flux\|Mono)\<B\>, A is the element type of Flux\|Mono, we can use `(Flux|Mono).flatMap` or `Mono.flatMapMany` to apply the function to each element.
 
 - Flux
 
