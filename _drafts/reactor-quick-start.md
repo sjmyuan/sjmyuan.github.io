@@ -5,12 +5,12 @@ tags:
 categories:
 - Reactor
 header:
-  overlay_image: TODO
+  overlay_image: https://images.shangjiaming.com/vitaliy-paykov-yDDnNsKep2g-unsplash.jpeg
   overlay_filter: 0.5
   caption: 'Photo credit: [**Unsplash**](https://unsplash.com)'
 ---
 
-> [Reactor](link) is a fully non-blocking reactive programming foundation for the JVM, with efficient demand management (in the form of managing “backpressure”).
+> [Reactor](https://projectreactor.io/) is a fully non-blocking reactive programming foundation for the JVM, with efficient demand management (in the form of managing “backpressure”).
 
 Seems it's very hard, but we can only use 20% of its feature to implement almost 80% work.
 
@@ -26,7 +26,7 @@ So don't be scared about it, after reading this blog, you can also use it easily
 
 # How to install?
 
-Add the following configuration to your `pom.xml`. we use `bom` here, so we don't need to care about the version and dependency consistency.
+Add the following configuration to your `pom.xml`. we use [BOM](https://www.baeldung.com/spring-maven-bom) here, so we don't need to care about the version and dependency consistency.
 
 ```xml
 <dependencyManagement> 
@@ -203,7 +203,6 @@ In this section, I will use some concept to group the knowledge
                 .expectNext(4).verifyComplete();
     }
 ```
-//TODO check if mono can work
 ### How to box Stream?
 
 ```java
@@ -215,8 +214,6 @@ In this section, I will use some concept to group the knowledge
     }
 ```
 
-//TODO check if mono can work
-
 ### How to box Throwable?
 
 ```java
@@ -226,7 +223,14 @@ In this section, I will use some concept to group the knowledge
                 .verifyErrorMessage("some error");
     }
 ```
-//TODO mono
+
+```java
+    @Test
+    public void canBeCreatedFromThrowable() {
+        StepVerifier.create(Mono.error(new Exception("some error")))
+                .verifyErrorMessage("some error");
+    }
+```
 
 ## Transforming
 
@@ -238,7 +242,14 @@ In this section, I will use some concept to group the knowledge
         StepVerifier.create(flux.filter(x -> x > 5)).expectNext(6).verifyComplete();
     }
 ```
-//TODO mono
+
+```java
+    @Test
+    public void canDoFilter() {
+        StepVerifier.create(Mono.just(6).filter(x -> x > 5)).expectNext(6).verifyComplete();
+        StepVerifier.create(Mono.just(2).filter(x -> x > 5)).verifyComplete();
+    }
+```
 
 ### How to apply a function A -> B?
 //TODO more explanation
@@ -255,7 +266,18 @@ In this section, I will use some concept to group the knowledge
                 .expectNext(5).expectNext(6).expectNext(7).verifyComplete();
     }
 ```
-//TODO mono
+
+```java
+    @Test
+    public void canMapTheTypeOfValueInSequenceToAnotherType() {
+        StepVerifier.create(Mono.just(1).map(x -> x.toString())).expectNext("1").verifyComplete();
+    }
+
+    @Test
+    public void canMapTheValueInSequenceToAnotherValue() {
+        StepVerifier.create(Mono.just(1).map(x -> x + 1)).expectNext(2).verifyComplete();
+    }
+```
 ### How to apply a function A -> (Flux|Mono)<B>?
 //TODO more explanation
 ```java
@@ -270,7 +292,18 @@ In this section, I will use some concept to group the knowledge
                 .expectNext(3).expectNext(4).expectNext(5).expectNext(6).verifyComplete();
     }
 ```
-//TODO mono
+
+```java
+    @Test
+    public void canMapTheValueInSequenceToAnotherSequence() {
+
+        StepVerifier.create(Mono.just(1).flatMapMany(x -> Flux.just(x, x))).expectNext(1)
+                .expectNext(1).verifyComplete();
+
+        StepVerifier.create(Mono.just(1).flatMap(x -> Mono.just(x + 1))).expectNext(2)
+                .verifyComplete();
+    }
+```
 ### How to give a default value if there is no data?
 ```java
     @Test
@@ -279,7 +312,14 @@ In this section, I will use some concept to group the knowledge
                 .verifyComplete();
     }
 ```
-//TODO mono
+
+```java
+    @Test
+    public void canRecoverWithSingleDefaultValueFromEmptySequence() {
+        StepVerifier.<Integer>create(Mono.<Integer>empty().defaultIfEmpty(1)).expectNext(1)
+                .verifyComplete();
+    }
+```
 ### How to replace with another Flux|Mono if there is no data?
 
 ```java
@@ -289,7 +329,14 @@ In this section, I will use some concept to group the knowledge
                 .expectNext(1).verifyComplete();
     }
 ```
-//TODO mono
+
+```java
+    @Test
+    public void canRecoverWithAnotherSequenceFromEmptySequence() {
+        StepVerifier.<Integer>create(Mono.<Integer>empty().switchIfEmpty(Mono.just(1)))
+                .expectNext(1).verifyComplete();
+    }
+```
 
 ## Peeking
 
@@ -303,7 +350,17 @@ In this section, I will use some concept to group the knowledge
         assertThat(list.size()).isEqualTo(6);
     }
 ```
-//TODO Mono
+
+```java
+    @Test
+    public void canDoSomethingForEveryElement() {
+        List<Integer> list = new LinkedList<Integer>();
+        Mono.just(1).doOnNext(x -> list.add(x)).block();
+        assertThat(list.size()).isEqualTo(1);
+
+        Mono.just(1).doOnNext(x -> System.out.println(x)).block();
+    }
+```
 
 ## Unboxing
 
@@ -323,16 +380,20 @@ In this section, I will use some concept to group the knowledge
 ### How to get data out of Mono?
 
 ```java
-//TODO
+    @Test
+    public void canBeConvertedToValue() {
+        assertThat(Mono.just(1).block()).isEqualTo(1);
+        assertThat(Mono.empty().block()).isNull();
+    }
 ```
 
 # Summary
 
-I created a repo [reactor-examples](fix-url) to play the above examples, but there are more.
+I created a repo [reactor-examples](https://github.com/sjmyuan/reactor-examples) to play the above examples, but there are more.
 
 Clone the repo and make you hand dirty!
 ```sh
-git clone <fix-url>
+git clone git@github.com:sjmyuan/reactor-examples.git
 ```
 
 Welcome to raise PR to add more examples.
