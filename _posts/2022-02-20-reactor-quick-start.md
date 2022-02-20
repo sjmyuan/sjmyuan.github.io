@@ -1,15 +1,15 @@
 ---
 title: Reactor Quick Start
 tags:
-  - Java
+- Java
 categories:
-  - Reactor
+- Reactor
 header:
   overlay_image: https://images.shangjiaming.com/vitaliy-paykov-yDDnNsKep2g-unsplash.jpeg
   overlay_filter: 0.5
-  caption: "Photo credit: [**Unsplash**](https://unsplash.com)"
+  caption: 'Photo credit: [**Unsplash**](https://unsplash.com)'
+date: 2022-02-20 23:21 +0800
 ---
-
 > [Reactor](https://projectreactor.io/) is a fully non-blocking reactive programming foundation for the JVM, with efficient demand management (in the form of managing “backpressure”).
 
 Seems it's very hard, but it follows the [Pareto principle](https://en.wikipedia.org/wiki/Pareto_principle), we just use 20% of its features in our daily work. 
@@ -53,7 +53,7 @@ Add the following configuration to your `pom.xml`. we use [BOM](https://www.bael
 </dependencies>
 ```
 
-# How to do test?
+# How to do a test?
 
 Reactor supplied a test library to help us to test Flux|Mono, we can use `StepVerifier` in this library to
 
@@ -71,7 +71,7 @@ Reactor supplied a test library to help us to test Flux|Mono, we can use `StepVe
            .verifyErrorMessage("some error");
   ```
 
-- Verify the end of sequence
+- Verify the end of the sequence
 
   ```java
     StepVerifier.create(Flux.empty()).verifyComplete();
@@ -91,7 +91,7 @@ There are two basic concepts in reactor
 
   A sequence of data, there is 0 or 1 element
 
-# What's the 20% features we need to know?
+# What are the 20% features we need to know?
 
 In this section, I will borrow some concepts to group the examples
 
@@ -274,7 +274,7 @@ This can only be done by Flux.
 
 ## Transforming
 
-### How to filter element by some condition?
+### How to filter elements by some condition?
 
 - Flux
 
@@ -298,7 +298,7 @@ This can only be done by Flux.
 
 ### How to apply a function A -> B?
 
-If there is a function A -> B, A is the element type of Flux|Mono and B is not Flux|Mono, we can use `(Flux|Mono).map` to apply the function to each element.
+If there is a function A -> B, A is the element type of Flux|Mono, and B is not Flux|Mono, we can use `(Flux|Mono).map` to apply the function to each element.
 
 - Flux
 
@@ -411,7 +411,7 @@ If there is a function A -> (Flux|Mono)<B>, A is the element type of Flux|Mono, 
 
 ### How to print log for each element?
 
-We can use `(Flux|Mono).doOnNext` to peek the value of each element but not modify its value.
+We can use `(Flux|Mono).doOnNext` to peek at the value of each element but not modify its value.
 
 - Flux
 
