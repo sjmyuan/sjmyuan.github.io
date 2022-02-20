@@ -1,5 +1,6 @@
 ---
 title: Reactor Quick Start
+excerpt: "Seems it's very hard, but it follows the Pareto principle..."
 tags:
 - Java
 categories:
@@ -16,11 +17,11 @@ Seems it's very hard, but it follows the [Pareto principle](https://en.wikipedia
 
 In my current project, we haven't touched `backpressure` anymore, most of the operations we used are
 
-- (Flux|Mono).just
-- (Flux|Mono).map
-- (Flux|Mono).flatMap
-- (Flux|Mono).onErrorResume
-- (Flux|Mono).filter
+- (Flux\|Mono).just
+- (Flux\|Mono).map
+- (Flux\|Mono).flatMap
+- (Flux\|Mono).onErrorResume
+- (Flux\|Mono).filter
 
 So don't be scared about it, after reading this blog, you can also use it easily in your project.
 
@@ -55,7 +56,7 @@ Add the following configuration to your `pom.xml`. we use [BOM](https://www.bael
 
 # How to do a test?
 
-Reactor supplied a test library to help us to test Flux|Mono, we can use `StepVerifier` in this library to
+Reactor supplied a test library to help us to test Flux\|Mono, we can use `StepVerifier` in this library to
 
 - Verify elements and their order
 
@@ -97,7 +98,7 @@ In this section, I will borrow some concepts to group the examples
 
 - Boxing
 
-  Put the data into Flux|Mono
+  Put the data into Flux\|Mono
 
 - Transforming
 
@@ -109,7 +110,7 @@ In this section, I will borrow some concepts to group the examples
 
 - Unboxing
 
-  Get the data out of Flux|Mono
+  Get the data out of Flux\|Mono
 
 ## Boxing
 
@@ -298,7 +299,7 @@ This can only be done by Flux.
 
 ### How to apply a function A -> B?
 
-If there is a function A -> B, A is the element type of Flux|Mono, and B is not Flux|Mono, we can use `(Flux|Mono).map` to apply the function to each element.
+If there is a function A -> B, A is the element type of Flux\|Mono, and B is not Flux\|Mono, we can use `(Flux\|Mono).map` to apply the function to each element.
 
 - Flux
 
@@ -330,9 +331,9 @@ If there is a function A -> B, A is the element type of Flux|Mono, and B is not 
         }
     ```
 
-### How to apply a function A -> (Flux|Mono)<B>?
+### How to apply a function A -> (Flux\|Mono)<B>?
 
-If there is a function A -> (Flux|Mono)<B>, A is the element type of Flux|Mono, we can use `(Flux|Mono).flatMap` or `Mono.flatMapMany` to apply the function to each element.
+If there is a function A -> (Flux\|Mono)<B>, A is the element type of Flux\|Mono, we can use `(Flux\|Mono).flatMap` or `Mono.flatMapMany` to apply the function to each element.
 
 - Flux
 
@@ -385,7 +386,7 @@ If there is a function A -> (Flux|Mono)<B>, A is the element type of Flux|Mono, 
         }
     ```
 
-### How to replace current Flux|Mono with another Flux|Mono if there is no data?
+### How to replace current Flux\|Mono with another Flux\|Mono if there is no data?
 
 - Flux
 
@@ -411,7 +412,7 @@ If there is a function A -> (Flux|Mono)<B>, A is the element type of Flux|Mono, 
 
 ### How to print log for each element?
 
-We can use `(Flux|Mono).doOnNext` to peek at the value of each element but not modify its value.
+We can use `(Flux\|Mono).doOnNext` to peek at the value of each element but not modify its value.
 
 - Flux
 
