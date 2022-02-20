@@ -299,7 +299,7 @@ This can only be done by Flux.
 
 ### How to apply a function A -> B?
 
-If there is a function A -> B, A is the element type of Flux\|Mono, and B is not Flux\|Mono, we can use `(Flux\|Mono).map` to apply the function to each element.
+If there is a function A -> B, A is the element type of Flux\|Mono, and B is not Flux\|Mono, we can use `(Flux|Mono).map` to apply the function to each element.
 
 - Flux
 
@@ -333,7 +333,7 @@ If there is a function A -> B, A is the element type of Flux\|Mono, and B is not
 
 ### How to apply a function A -> (Flux\|Mono)<B>?
 
-If there is a function A -> (Flux\|Mono)<B>, A is the element type of Flux\|Mono, we can use `(Flux\|Mono).flatMap` or `Mono.flatMapMany` to apply the function to each element.
+If there is a function A -> (Flux\|Mono)<B>, A is the element type of Flux\|Mono, we can use `(Flux|Mono).flatMap` or `Mono.flatMapMany` to apply the function to each element.
 
 - Flux
 
@@ -412,7 +412,7 @@ If there is a function A -> (Flux\|Mono)<B>, A is the element type of Flux\|Mono
 
 ### How to print log for each element?
 
-We can use `(Flux\|Mono).doOnNext` to peek at the value of each element but not modify its value.
+We can use `(Flux|Mono).doOnNext` to peek at the value of each element but not modify its value.
 
 - Flux
 
