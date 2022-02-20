@@ -1,13 +1,13 @@
 ---
 title: Reactor Quick Start
 tags:
-- Java
+  - Java
 categories:
-- Reactor
+  - Reactor
 header:
   overlay_image: https://images.shangjiaming.com/vitaliy-paykov-yDDnNsKep2g-unsplash.jpeg
   overlay_filter: 0.5
-  caption: 'Photo credit: [**Unsplash**](https://unsplash.com)'
+  caption: "Photo credit: [**Unsplash**](https://unsplash.com)"
 ---
 
 > [Reactor](https://projectreactor.io/) is a fully non-blocking reactive programming foundation for the JVM, with efficient demand management (in the form of managing “backpressure”).
@@ -16,11 +16,11 @@ Seems it's very hard, but we can only use 20% of its feature to implement almost
 
 In my current project, we don't touch `backpressure` any more, most of the operations we used are
 
-* (Flux|Mono).just
-* (Flux|Mono).map
-* (Flux|Mono).flatMap
-* (Flux|Mono).onErrorResume
-* (Flux|Mono).filter
+- (Flux|Mono).just
+- (Flux|Mono).map
+- (Flux|Mono).flatMap
+- (Flux|Mono).onErrorResume
+- (Flux|Mono).filter
 
 So don't be scared about it, after reading this blog, you can also use it easily in you project.
 
@@ -29,7 +29,7 @@ So don't be scared about it, after reading this blog, you can also use it easily
 Add the following configuration to your `pom.xml`. we use [BOM](https://www.baeldung.com/spring-maven-bom) here, so we don't need to care about the version and dependency consistency.
 
 ```xml
-<dependencyManagement> 
+<dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>io.projectreactor</groupId>
@@ -43,11 +43,11 @@ Add the following configuration to your `pom.xml`. we use [BOM](https://www.bael
 <dependencies>
     <dependency>
         <groupId>io.projectreactor</groupId>
-        <artifactId>reactor-core</artifactId> 
+        <artifactId>reactor-core</artifactId>
     </dependency>
     <dependency>
         <groupId>io.projectreactor</groupId>
-        <artifactId>reactor-test</artifactId> 
+        <artifactId>reactor-test</artifactId>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -55,89 +55,109 @@ Add the following configuration to your `pom.xml`. we use [BOM](https://www.bael
 
 # How to do test?
 
-Reactor supplied a test library to help us to test Flux|Mono, we can use `StepVerifier` in this library to 
+Reactor supplied a test library to help us to test Flux|Mono, we can use `StepVerifier` in this library to
 
-* Verify the elements and their order
+- Verify elements and their order
 
   ```java
     StepVerifier.create(Flux.fromArray(new Integer[] {1, 2, 3, 4, 5})).expectNext(1)
         .expectNext(2).expectNext(3).expectNext(4).expectNext(5).verifyComplete();
   ```
 
-* Verify error 
-   ```java
-    StepVerifier.create(Flux.error(new Exception("some error")))
-            .verifyErrorMessage("some error");
-   ```
-* Verify complete 
+- Verify error
+
+  ```java
+   StepVerifier.create(Flux.error(new Exception("some error")))
+           .verifyErrorMessage("some error");
+  ```
+
+- Verify end of sequence
 
   ```java
     StepVerifier.create(Flux.empty()).verifyComplete();
   ```
 
-In the following sections, we will use the `StepVerifier` to verify the examples.
+In the following sections, we will use the `StepVerifier` to verify examples.
 
 # What's the basic concept we need to know?
 
 There are two basic concepts in reactor
 
-* Flux
+- Flux
+
   A sequence of data, there are 0 or more elements
 
-* Mono
+- Mono
+
   A sequence of data, there is 0 or 1 element
 
-# What we need to know to do most of work?
+# What we need to know to do most of the work?
 
-In this section, I will use some concept to group the knowledge
+In this section, I will borrow some concepts to group the examples
 
-* Boxing
+- Boxing
+
   Put the data into Flux|Mono
 
-* Transforming
+- Transforming
+
   Transform the current data to another data
 
-* Peeking
+- Peeking
+
   Do something for each element but not modify the data
 
-* Unboxing
+- Unboxing
+
   Get the data out of Flux|Mono
 
 ## Boxing
 
 ### How to box String?
 
-```java
-    @Test
-    public void canBeCreatedFromString() {
-        StepVerifier.create(Flux.just("hello world")).expectNext("hello world").verifyComplete();
-    }
-```
+- Flux
 
-```java
-    @Test
-    public void canBeCreatedFromString() { //TODO add test in mono example
-        StepVerifier.create(Mono.just("hello world")).expectNext("hello world").verifyComplete();
-    }
-```
+    ```java
+        @Test
+        public void canBeCreatedFromString() {
+            StepVerifier.create(Flux.just("hello world")).expectNext("hello world").verifyComplete();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canBeCreatedFromString() { //TODO add test in mono example
+            StepVerifier.create(Mono.just("hello world")).expectNext("hello world").verifyComplete();
+        }
+    ```
+
 ### How to box Number?
 
-```java
-    @Test
-    public void canBeCreatedFromNumber() {
-        StepVerifier.create(Flux.just(1)).expectNext(1).verifyComplete();
-        StepVerifier.create(Flux.just(1.0)).expectNext(1.0).verifyComplete();
-    }
-```
+- Flux
 
-```java
-    @Test
-    public void canBeCreatedFromNumber() { //TODO add test in mono example
-        StepVerifier.create(Mono.just(1)).expectNext(1).verifyComplete();
-        StepVerifier.create(Mono.just(1.0)).expectNext(1.0).verifyComplete();
-    }
-```
+    ```java
+        @Test
+        public void canBeCreatedFromNumber() {
+            StepVerifier.create(Flux.just(1)).expectNext(1).verifyComplete();
+            StepVerifier.create(Flux.just(1.0)).expectNext(1.0).verifyComplete();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canBeCreatedFromNumber() { //TODO add test in mono example
+            StepVerifier.create(Mono.just(1)).expectNext(1).verifyComplete();
+            StepVerifier.create(Mono.just(1.0)).expectNext(1.0).verifyComplete();
+        }
+    ```
+
 ### How to box Optional or Nullable value?
+
+This can only be done by Mono
 
 ```java
     @Test
@@ -161,6 +181,11 @@ In this section, I will use some concept to group the knowledge
 ```
 
 ### How to box data generator?
+
+Data generator here is a function without parameter, its signature looks like () -> A.
+
+This can only be done by Mono.
+
 ```java
     @Test
     public void canBeCreatedFromCallable() {
@@ -168,7 +193,11 @@ In this section, I will use some concept to group the knowledge
                 .verifyComplete();
     }
 ```
+
 ### How to box Array?
+
+This can only be done by Flux.
+
 ```java
     @Test
     public void canBeCreatedFromArray() {
@@ -176,7 +205,11 @@ In this section, I will use some concept to group the knowledge
                 .expectNext(2).expectNext(3).expectNext(4).expectNext(5).verifyComplete();
     }
 ```
+
 ### How to box Iterable?
+
+This can only be done by Flux.
+
 ```java
     @Test
     public void canBeCreatedFromList() {
@@ -203,7 +236,10 @@ In this section, I will use some concept to group the knowledge
                 .expectNext(4).verifyComplete();
     }
 ```
+
 ### How to box Stream?
+
+This can only be done by Flux.
 
 ```java
     @Test
@@ -216,151 +252,185 @@ In this section, I will use some concept to group the knowledge
 
 ### How to box Throwable?
 
-```java
-    @Test
-    public void canBeCreatedFromThrowable() {
-        StepVerifier.create(Flux.error(new Exception("some error")))
-                .verifyErrorMessage("some error");
-    }
-```
+- Flux
 
-```java
-    @Test
-    public void canBeCreatedFromThrowable() {
-        StepVerifier.create(Mono.error(new Exception("some error")))
-                .verifyErrorMessage("some error");
-    }
-```
+    ```java
+        @Test
+        public void canBeCreatedFromThrowable() {
+            StepVerifier.create(Flux.error(new Exception("some error")))
+                    .verifyErrorMessage("some error");
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canBeCreatedFromThrowable() {
+            StepVerifier.create(Mono.error(new Exception("some error")))
+                    .verifyErrorMessage("some error");
+        }
+    ```
 
 ## Transforming
 
 ### How to filter element by some condition?
-```java
-    @Test
-    public void canDoFilter() {
-        Flux<Integer> flux = Flux.just(1, 2, 3, 4, 5, 6);
-        StepVerifier.create(flux.filter(x -> x > 5)).expectNext(6).verifyComplete();
-    }
-```
 
-```java
-    @Test
-    public void canDoFilter() {
-        StepVerifier.create(Mono.just(6).filter(x -> x > 5)).expectNext(6).verifyComplete();
-        StepVerifier.create(Mono.just(2).filter(x -> x > 5)).verifyComplete();
-    }
-```
+- Flux
+
+    ```java
+        @Test
+        public void canDoFilter() {
+            Flux<Integer> flux = Flux.just(1, 2, 3, 4, 5, 6);
+            StepVerifier.create(flux.filter(x -> x > 5)).expectNext(6).verifyComplete();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canDoFilter() {
+            StepVerifier.create(Mono.just(6).filter(x -> x > 5)).expectNext(6).verifyComplete();
+            StepVerifier.create(Mono.just(2).filter(x -> x > 5)).verifyComplete();
+        }
+    ```
 
 ### How to apply a function A -> B?
-//TODO more explanation
-```java
-    @Test
-    public void canMapTheTypeOfValueInSequenceToAnotherType() {
-        StepVerifier.create(flux.map(x -> x.toString())).expectNext("1").expectNext("2")
-                .expectNext("3").expectNext("4").expectNext("5").expectNext("6").verifyComplete();
-    }
 
-    @Test
-    public void canMapTheValueInSequenceToAnotherValue() {
-        StepVerifier.create(flux.map(x -> x + 1)).expectNext(2).expectNext(3).expectNext(4)
-                .expectNext(5).expectNext(6).expectNext(7).verifyComplete();
-    }
-```
+If there is a function A -> B, A is the element type of Flux|Mono and B is not Flux|Mono, we can use `(Flux|Mono).map` to apply the function to each element.
 
-```java
-    @Test
-    public void canMapTheTypeOfValueInSequenceToAnotherType() {
-        StepVerifier.create(Mono.just(1).map(x -> x.toString())).expectNext("1").verifyComplete();
-    }
+- Flux
 
-    @Test
-    public void canMapTheValueInSequenceToAnotherValue() {
-        StepVerifier.create(Mono.just(1).map(x -> x + 1)).expectNext(2).verifyComplete();
-    }
-```
+    ```java
+        @Test
+        public void canMapTheTypeOfValueInSequenceToAnotherType() {
+            StepVerifier.create(flux.map(x -> x.toString())).expectNext("1").expectNext("2")
+                    .expectNext("3").expectNext("4").expectNext("5").expectNext("6").verifyComplete();
+        }
+
+        @Test
+        public void canMapTheValueInSequenceToAnotherValue() {
+            StepVerifier.create(flux.map(x -> x + 1)).expectNext(2).expectNext(3).expectNext(4)
+                    .expectNext(5).expectNext(6).expectNext(7).verifyComplete();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canMapTheTypeOfValueInSequenceToAnotherType() {
+            StepVerifier.create(Mono.just(1).map(x -> x.toString())).expectNext("1").verifyComplete();
+        }
+
+        @Test
+        public void canMapTheValueInSequenceToAnotherValue() {
+            StepVerifier.create(Mono.just(1).map(x -> x + 1)).expectNext(2).verifyComplete();
+        }
+    ```
+
 ### How to apply a function A -> (Flux|Mono)<B>?
-//TODO more explanation
-```java
-    @Test
-    public void canMapTheValueInSequenceToAnotherSequence() {
 
-        StepVerifier.create(flux.flatMap(x -> Flux.just(x, x))).expectNext(1).expectNext(1)
-                .expectNext(2).expectNext(2).expectNext(3).expectNext(3).expectNext(4).expectNext(4)
-                .expectNext(5).expectNext(5).expectNext(6).expectNext(6).verifyComplete();
+If there is a function A -> (Flux|Mono)<B>, A is the element type of Flux|Mono, we can use `(Flux|Mono).flatMap` or `Mono.flatMapMany` to apply the function to each element.
 
-        StepVerifier.create(flux.flatMap(x -> Mono.just(x))).expectNext(1).expectNext(2)
-                .expectNext(3).expectNext(4).expectNext(5).expectNext(6).verifyComplete();
-    }
-```
+- Flux
 
-```java
-    @Test
-    public void canMapTheValueInSequenceToAnotherSequence() {
+    ```java
+        @Test
+        public void canMapTheValueInSequenceToAnotherSequence() {
 
-        StepVerifier.create(Mono.just(1).flatMapMany(x -> Flux.just(x, x))).expectNext(1)
-                .expectNext(1).verifyComplete();
+            StepVerifier.create(flux.flatMap(x -> Flux.just(x, x))).expectNext(1).expectNext(1)
+                    .expectNext(2).expectNext(2).expectNext(3).expectNext(3).expectNext(4).expectNext(4)
+                    .expectNext(5).expectNext(5).expectNext(6).expectNext(6).verifyComplete();
 
-        StepVerifier.create(Mono.just(1).flatMap(x -> Mono.just(x + 1))).expectNext(2)
-                .verifyComplete();
-    }
-```
+            StepVerifier.create(flux.flatMap(x -> Mono.just(x))).expectNext(1).expectNext(2)
+                    .expectNext(3).expectNext(4).expectNext(5).expectNext(6).verifyComplete();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canMapTheValueInSequenceToAnotherSequence() {
+
+            StepVerifier.create(Mono.just(1).flatMapMany(x -> Flux.just(x, x))).expectNext(1)
+                    .expectNext(1).verifyComplete();
+
+            StepVerifier.create(Mono.just(1).flatMap(x -> Mono.just(x + 1))).expectNext(2)
+                    .verifyComplete();
+        }
+    ```
+
 ### How to give a default value if there is no data?
-```java
-    @Test
-    public void canRecoverWithSingleDefaultValueFromEmptySequence() {
-        StepVerifier.<Integer>create(Flux.<Integer>empty().defaultIfEmpty(1)).expectNext(1)
-                .verifyComplete();
-    }
-```
 
-```java
-    @Test
-    public void canRecoverWithSingleDefaultValueFromEmptySequence() {
-        StepVerifier.<Integer>create(Mono.<Integer>empty().defaultIfEmpty(1)).expectNext(1)
-                .verifyComplete();
-    }
-```
+- Flux
+
+    ```java
+        @Test
+        public void canRecoverWithSingleDefaultValueFromEmptySequence() {
+            StepVerifier.<Integer>create(Flux.<Integer>empty().defaultIfEmpty(1)).expectNext(1)
+                    .verifyComplete();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canRecoverWithSingleDefaultValueFromEmptySequence() {
+            StepVerifier.<Integer>create(Mono.<Integer>empty().defaultIfEmpty(1)).expectNext(1)
+                    .verifyComplete();
+        }
+    ```
+
 ### How to replace with another Flux|Mono if there is no data?
 
-```java
-    @Test
-    public void canRecoverWithAnotherSequenceFromEmptySequence() {
-        StepVerifier.<Integer>create(Flux.<Integer>empty().switchIfEmpty(Flux.just(1)))
-                .expectNext(1).verifyComplete();
-    }
-```
+- Flux
 
-```java
-    @Test
-    public void canRecoverWithAnotherSequenceFromEmptySequence() {
-        StepVerifier.<Integer>create(Mono.<Integer>empty().switchIfEmpty(Mono.just(1)))
-                .expectNext(1).verifyComplete();
-    }
-```
+    ```java
+        @Test
+        public void canRecoverWithAnotherSequenceFromEmptySequence() {
+            StepVerifier.<Integer>create(Flux.<Integer>empty().switchIfEmpty(Flux.just(1)))
+                    .expectNext(1).verifyComplete();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canRecoverWithAnotherSequenceFromEmptySequence() {
+            StepVerifier.<Integer>create(Mono.<Integer>empty().switchIfEmpty(Mono.just(1)))
+                    .expectNext(1).verifyComplete();
+        }
+    ```
 
 ## Peeking
 
 ### How to print log for each element?
 
-```java
-    @Test
-    public void canDoSomethingForEveryElement() {
-        Flux<Integer> flux = Flux.just(1, 2, 3, 4, 5, 6);
-        flux.doOnNext(x -> System.out.println(x)).collectList().block(); // TODO check the println command
-        assertThat(list.size()).isEqualTo(6);
-    }
-```
+We can use `(Flux|Mono).doOnNext` to peek the value of each element but not modify its value.
 
-```java
-    @Test
-    public void canDoSomethingForEveryElement() {
-        List<Integer> list = new LinkedList<Integer>();
-        Mono.just(1).doOnNext(x -> list.add(x)).block();
-        assertThat(list.size()).isEqualTo(1);
+- Flux
 
-        Mono.just(1).doOnNext(x -> System.out.println(x)).block();
-    }
-```
+    ```java
+        @Test
+        public void canDoSomethingForEveryElement() {
+            Flux<Integer> flux = Flux.just(1, 2, 3, 4, 5, 6);
+            flux.doOnNext(x -> System.out.println(x)).collectList().block();
+        }
+    ```
+
+- Mono
+
+    ```java
+        @Test
+        public void canDoSomethingForEveryElement() {
+            Mono.just(1).doOnNext(x -> System.out.println(x)).block();
+        }
+    ```
 
 ## Unboxing
 
@@ -389,9 +459,10 @@ In this section, I will use some concept to group the knowledge
 
 # Summary
 
-I created a repo [reactor-examples](https://github.com/sjmyuan/reactor-examples) to play the above examples, but there are more.
+I created a repo [reactor-examples](https://github.com/sjmyuan/reactor-examples) to play the above examples.
 
-Clone the repo and make you hand dirty!
+Clone the repo and get your hand dirty!
+
 ```sh
 git clone git@github.com:sjmyuan/reactor-examples.git
 ```
