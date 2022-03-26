@@ -2,20 +2,39 @@
 title: Let's write junior code in Scala
 tags:
   - Scala
+  - Team
 ---
 
-Our team have been using Scala about 5 years, there some lesson we learnt, the most important one is writing junior code. 
+What make us excited when coding? Refactoring the code, involving a new technology or using a fantastic solution to resolve a hard problem?
 
-TL,DR
+All these things can prove our ability, but team have to maintain them, it's our responsibility to teach team.
 
-* We got problem hiring people with Scala skills. 
-* We can't train people efficiently
-* It's hard to switch tech stack
-* Writing junior code can save us
+If our team is pretty stable and all the team members are senior developers, there is nothing to concern. 
+
+But what if it is not true? how do we ensure the team can still maintain the code very well? 
+
+Unfortunately, this is my team's situation. My team already worked on Scala more than 5 years, we use functional programming heavily and would like to try any new technology, all team members are happy. But with more and more fantastic work we did, we found it's harder and harder to continue it, finally we decide to apply some limitation to the code to make the junior developer can contribute the code easily, we call it wring junior code.
+
+In this post, I will share why we did this decision and how to write the junior code.
 
 # Why Junior Code?
 
-## People
+## Recruitment
+
+With more technologies, we need to add more requirements to our JD, then it's harder to hire people with required skills.
+
+Ideally, we need people with the following skills
+
+* Scala
+* Functional Programming
+* Cats ecosystem
+* Http4s
+* fs2
+* Doobie
+* Circe
+
+Actually, we can only find the Java developer. The best match people we hired in the last few years is knowing Spark.
+
 
 It's always hard to hire people with Scala skills, our requirements are
 
