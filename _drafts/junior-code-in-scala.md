@@ -21,40 +21,30 @@ In this post, I will share why we did this decision and how to write the junior 
 
 ## Recruitment
 
-With more technologies, we need to add more requirements to our JD, then it's harder to hire people with required skills.
+We tried to hire people with our required the techniques, such as functional programming, cats, fs2, http4s, circe, doobie, etc. But it's harder than we thought.
 
-Ideally, we need people with the following skills
+In the past 5 years, we got 18 new team members, only 2 of them have Spark experience and 3 of them become senior Scala developer.
 
-* Scala
-* Functional Programming
-* Cats ecosystem
-* Http4s
-* fs2
-* Doobie
-* Circe
+Most of the new team members are from other tech stack, Java, JavaScript or Ruby for example.
 
-Actually, we can only find the Java developer. The best match people we hired in the last few years is knowing Spark.
-
-
-It's always hard to hire people with Scala skills, our requirements are
-
-* Scala
-* Functional programming
-* Cats ecosystem
-
-But the best people we can hire is people with Spark Scala, which still have a big gap with our requirements.
-
-Usually we have to hire Java developers and train them by ourselves, but it's still a challenge.
+So we have to train our new team members.
 
 ## Training
 
-We can't train people efficiently, there too many things to learn.
+There are too many things to learn for a Java developer. we can't make a junior Scala developer to be Senior Scala developer quickly.  
 
-It's easy to teach Scala basic knowledge and common Monad like Option, Either. but people will always stuck at Free Monad, Monad Transformer and implicit.
+Like other new languages, it's always easy to master the basic knowledge, such as Scala primitive feature and simple Monad(Option/Either/Try).
 
-It usually need more than 3 month to train people to make them contribute qualified code.
+But it's hard to master the advanced Functional programming concept and library, such as Free Monad, Monad Transformer.
 
-And most of time, before the newbies can contribute code, some senior team members will roll off.
+The purpose of the training is to make a Java developer meet our requirements of Scala shortly, considering the new technologies we using in project, thats mean they need to be a Senior Scala shortly.
+
+We prepared sessions and workshops, but it doesn't work, our team members still need at least 3 months to do qualified contribution.
+Some techniques even need more time, such as Free Monad, Monad Transformer, fs2 and eff.
+
+During the training, some senior members will roll off, less and less members master some technologies, such as eff, we have to plan some story to decommission this library.
+
+If we can train newbies efficiently, the knowledge should not be lost and we don't need to spend extra effort to decommission some fantastic technology.
 
 ## Possible Solution
 
