@@ -75,13 +75,41 @@ We chose solution 3. We know there are always complicated problem which need sen
 
 ## Avoid implicit
 
-According to our experience, implicit is the most hard part for beginner.
+`implicit` is a powerful tool, but it is very easy to be abused.
 
-Although it can make our code clean and simple, but we need more time to understand how it works.
+Most of time, it is `implicit` which make the code hard to read and maintain.
+It’s also the biggest blocker for new team members to learn scala.
 
-It's not a required technique to write better code. 
+For example
 
-So unless supply implicit instance to framework, let's not define implicit function/instance/class by ourself, let's use the raw code to implement the feature.
+```scala
+import IntInstances._
+
+val a:Int = "1"
+if(a.isGreaterThan(0)){
+  println(s"The number is greater than 0")
+}
+```
+
+Could you understand this code? Why a Int can accept String? Where the function `isGreaterThan` come from?
+
+How about this one
+
+```scala
+def toInt(String str):Int = a.toInt
+def isGreaterThan(Int x, Int y):Boolean = x > y
+
+val a:Int = toInt("1")
+if(isGreaterThan(a, 0)){
+  println(s"The number is greater than 0")
+}
+```
+
+This one is not fancy, but most of developers can understand what it is doing.
+
+`implicit` is not a required technique to write better code. 
+
+So unless framework requires implicit instances, let's not use it.
 
 ## Unified Monad
 
