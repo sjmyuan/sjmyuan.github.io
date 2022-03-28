@@ -30,35 +30,46 @@ Most of the new team members are from other tech stack, Java, JavaScript or Ruby
 So we have to train our new team members.
 
 ## Training
+Considering most of new team members don't have Scala experience, the purpose of training is  to help them to be senior Scala developer. 
 
-There are too many things to learn for a Java developer. we can't make a junior Scala developer to be Senior Scala developer quickly.  
+Why senior Scala developer? Because we used advanced libraries, such as eff, fs2, http4s, etc. there are different architecture in different repo, such as Cake Pattern, Tageless Final, Free Monad, etc. Our team member have to master all the advanced knowledge before they can contribute qualified code.
 
-Like other new languages, it's always easy to master the basic knowledge, such as Scala primitive feature and simple Monad(Option/Either/Try).
+Did I mention the training time? Ideally it should be like other languages, the team members can contribute qualified code in few weeks. Could you become a senior Java developer from graduate in few weeks? The answer is definitely no for most of people, that's the problem.
 
-But it's hard to master the advanced Functional programming concept and library, such as Free Monad, Monad Transformer.
+We prepared more than 20 hours sessions and workshops, which cover the knowledge from basic Scala and Functional Programming knowledge to the advanced library usage.
 
-The purpose of the training is to make a Java developer meet our requirements of Scala shortly, considering the new technologies we using in project, thats mean they need to be a Senior Scala shortly.
+According to the feedback of new team members, we can split the knowledge into two parts
 
-We prepared sessions and workshops, but it doesn't work, our team members still need at least 3 months to do qualified contribution.
-Some techniques even need more time, such as Free Monad, Monad Transformer, fs2 and eff.
+1. Junior knowledge, which can be mastered in few weeks.
+   * Scala language
+   * Functional programming fundamental knowledge
+   * Simple monad, like Option, Either, IO
+   * Simple function composition, like map, flatMap, filter, reduce, foldLeft
+   * Library with simple interface, like cats, http4s, circe, doobie
 
-During the training, some senior members will roll off, less and less members master some technologies, such as eff, we have to plan some story to decommission this library.
+2. Senior knowledge, which need several months to be understood.
+   * Implicit
+   * Free Monad
+   * Complicated Monad, like Reader, State
+   * Monad Transformer, like ReaderT
+   * Complicated function composition, like traverse and sequence 
+   * Library with complicated interface, like eff, fs2, monix
+   * Architecture, like Cake pattern, ReaderT pattern and Tagless Final
 
-If we can train newbies efficiently, the knowledge should not be lost and we don't need to spend extra effort to decommission some fantastic technology.
+Unfortunately, we used lots of Senior knowledge in our system, that mean our training can not make our new team members working on our repo shortly.
 
 ## Possible Solution
 
-We can bless there are enough people with Scala skills and we don't need to worry about it anymore, but it's impossible for now.
+There are 3 possible solutions
 
-We also can switch to another language stack, like TypeScript or Java, but there are more than 50 systems writhen by Scala and most of our senior people like Scala, if we switch language, we need to rewrite the systems and lose most of the senior people.
+1. We can bless one day there are enough people with our required Scala skills, then we don't need to worry about this problem anymore. But we know it's impossible if we do nothing.
 
-So the possible solution is starting write junior code to make sure it
+2. We can switch to another language stack, like TypeScript or Java. But there are more than 50 existing systems writhen by Scala and most of our senior people like Scala and Functional Programming, if we switch language, we need to spend huge effort to rewrite the systems and may lose most of the senior people. This is what we can't afford.
 
-* Friendly for Java Developer.
-* Easy to train, for example, after several weeks training, A Java Developer can contribute qualified code.
-* Enlarge the Scala community in long term.
+3. Only use the Junior knowledge, then it will be easier both for new team members and existing members, we can utilize the benefit of Scala and Functional Programming, and don't need to worry about the training too much.
 
-Also there are always complicated problem which need senior people to write fancy code, we can move it to a framework with simple interface. ideally we can make it open source, then contribute to the Scala ecosystems.
+
+We chose solution 3. We know there are always complicated problem which need senior knowledge, we can move it to a framework with simple interface. ideally we can make it open source, then contribute to the Scala ecosystems.
 
 # How to write junior code in Scala?
 
