@@ -1,5 +1,5 @@
 ---
-title: Let's write junior code in Scala
+title: Make junior developer happy
 tags:
   - Scala
   - Team
@@ -7,17 +7,17 @@ tags:
 
 What make us excited when coding? Refactoring the code, involving a new technology or using a fantastic solution to resolve a hard problem?
 
-All these things can prove our ability, but team have to maintain them, it's our responsibility to teach team.
+These things are harder, and can prove our ability. But we should not forget all team members will maintain them, not only us.
 
 If our team is pretty stable and all the team members are senior developers, there is nothing to concern. 
 
 But what if it is not true? how do we ensure the team can still maintain the code very well? 
 
-Unfortunately, this is my team's situation. My team already worked on Scala more than 5 years, we use functional programming heavily and would like to try any new technology, all team members are happy. But with more and more fantastic work we did, we found it's harder and harder to continue it, finally we decide to apply some limitation to the code to make the junior developer can contribute the code easily, we call it wring junior code.
+Unfortunately, this is my team's situation. My team already worked on Scala more than 5 years, we use functional programming heavily and would like to try any new technology, ~~all team members are happy~~. But with more and more fantastic work we did, we found it's harder and harder to continue it, finally we decide to apply some limitation to the code to ~~make the junior developer can contribute the code easily, we call it wring junior code~~ make our junior developer happy.
 
-In this post, I will share why we did this decision and how to write the junior code.
+In this post, I will share why we made this decision and how to ~~write the junior code~~ make our junior developer happy.
 
-# Why Junior Code?
+# Why Junior ~~Code~~ Developer?
 
 ## Recruitment
 
@@ -168,13 +168,13 @@ then moved to eff which support to compose all Monad together,
 ```scala
 type Stack = Fx.fx4[Application, Service1, Service2, Service4, IO]
 
-class Application[M: HasService1: HasService2: HasService3, A] {
-  def runApplication[M: HasApplication, U: HasService1: HasService2: HasService3] = ???
+class Application {
+  def runApplication[R, U: Member.Aux[Application, R, ?]: HasService1: HasService2: HasService3, A](eff: Eff[R, A]): Eff[U, A] = ???
 }
 
 val application = new Application[Stack]().runService1().runService2().runService3()
 
-application.unsafeRunSync()
+application.unsafeRunSync() // TODO fix the example
 ```
 
 and after two years we embrace Tagless Final, 
