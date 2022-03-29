@@ -230,18 +230,18 @@ With this way, we can utilize the advantage of functional programming, and make 
 
 ## Move senior code to framework
 
-There are always complicated problem, such as NewRellic, transaction id, global context. there is no mature framework in Scala ecosystem to solve them easily.
+We still need the senior code, there are always complicated problem, such as NewRellic integration, log with transaction id, global context, etc. sometimes there is no mature framework in Scala to solve them, then we need to build our own framework.
 
-Senior people need to solve them to unblock team, we can create an open source framework to do that. There is no limitation in the framework even side effect, only one rule is the interface should be easy.
+There is only one rule for the framework, the interface should be easy to use and verified. apart from that, we can write any fantastic code, even involve side effect.
 
-Then we can contribute to the ecosystem and make senior people happy.
+For example, if we want to print log with transaction id, we may need to use MDC to store the transaction id of each thread, which is definitely side effect. But if there is no other better solution and the framework can be tested very well, we can just adopt it.
+
+We'd better make it to be open source framework, same problem may be also happening in other teams.
+
+With this way, we can contribute to the ecosystem and make senior team members happy.
 
 # Summary
 
-We already took the actions, it reduce the concern of HR, DM and Team Lead, they just need to hire Java Developer.
+This is the lesson we learnt in Scala, [it also happened in some Haskell team](https://www.parsonsmatt.org/2019/12/26/write_junior_code.html).
 
-Team members also feel more happy, because the feedback loop is shorter now, they can do a better contribution quickly.
-
-We can utilize most of the techniques in OO to refine our architecture and code, not only pure function and fancy code.
-
-To get a better community, let's write junior code.
+Make our junior developer happy, it is the key point to continue our business and enlarge the community.
