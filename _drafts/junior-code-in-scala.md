@@ -113,20 +113,120 @@ So unless framework requires implicit instances, let's not use it.
 
 ## Unified Monad
 
-There are lots of Monad can catch the side effect, such as Option, Either, Try, IO, Task etc. We may use different Monad in different service, that means we need to convert them to each other, it need more knowledge to do that.
+The return type of function is very important in Functional Programming, it should be able to handle all the side effect.
 
-We can use an unified Monad in our whole project to simplify the convert process, for example, we can use IO to catch all the side effect, then we just need to care about how to catch the side effect, don't need to care how to compose the current service with other service.
+If a function may return null value, we can choose Option. If a function may return error, we can choose Either. If a function may interact with API or database, we can choose IO or Task.
 
-The Unified Monad should have simple interface, we used a Monad called eff before, it's very powerful, can compose any effect together.
-But we have to replace it with IO after using it 2 years, because only few peoples can understand it properly, most of the team members can't do a qualified change to it.
+How about we have two functions with different return type? for example
 
-## OO architecture with pure function
+```scala
+def readInput():Option[String] = ???
+def toInt(input:String):Either[String, Int] = ???
+```
 
-We can still use functional programming to utilize its advantage, but we need a way to group our functions properly.
+If we want to compose these two functions, we need unify their return type
 
-The traditional OO architectures like three-layers, port-adapter and onion are good options, most of developers are familiar with them, they just need to focus on how to make the function pure.
+```scala
+for{
+input <- readInput().toEither("There is no input")
+value <- toInt(input)
+} yield value
+```
 
-Not like Java, our service will only have functions, we will use ADT to define the immutable data which is a required tech to make function pure.
+That mean if we have lots of different return type in our project, we need to remember how to convert them to each other. it need more knowledge but give us less benefit.
+
+We can use an unified return type in our whole project, then all the functions can be composed directly. 
+
+But we need to choose the return type carefully
+
+* The return type should be powerful enough to handle all possible effect. for example, we can not choose Either if we need to interact with API or database. IO and Task are good candidate.
+* The interface of return type should be easy to use. for example, Free Monad or ReaderT is complicated, we need to learn how to lift other Monad into them.
+
+//The Unified Monad should have simple interface, we used a Monad called eff before, it's very powerful, can compose any effect together.
+//But we have to replace it with IO after using it 2 years, because only few peoples can understand it properly, most of the team members can't do a qualified change to it.
+
+## OO architecture with pure functions
+
+We tried lots of architectures in our projects. 
+
+At the beginning we used Cake pattern, 
+
+```scala
+trait Application with Service1 with Service2 with Service3 {
+  ???
+
+  def run = ???
+} 
+
+val application = new Application with Service1Implementation with Service2Implementation with Service3Implementation {}
+
+application.run
+```
+
+then moved to eff which support to compose all Monad together, 
+
+```scala
+type Stack = Fx.fx4[Application, Service1, Service2, Service4, IO]
+
+class Application[M: HasService1: HasService2: HasService3, A] {
+  def runApplication[M: HasApplication, U: HasService1: HasService2: HasService3] = ???
+}
+
+val application = new Application[Stack]().runService1().runService2().runService3()
+
+application.unsafeRunSync()
+```
+
+and after two years we embrace Tagless Final, 
+
+```scala
+trait Application[M[_]] {
+  ???
+
+  def run:M[Unit] = ???
+}
+
+class ApplicationImplementation[M[_]:Monad](service1: Service1[M], service2: Service2[M], service3: Service3[M]){
+  ???
+
+  def run:M[Unit] = ???
+}
+
+val application = new ApplicationImplementation[IO](new Service1Implementation[IO](), new Service2Implementation[IO](), new Service3Implementation[IO]())
+
+application.run.unsafeRunSync()
+```
+
+then we come back to traditional OO architecture with pure functions. 
+
+```scala
+
+trait Application {
+  ???
+
+  def run:IO[Unit] = ???
+}
+
+class ApplicationImplementation(service1: Service1, service2: Service2, service3: Service3){
+  ???
+
+  def run:IO[Unit] = ???
+}
+
+val application = new ApplicationImplementation(new Service1Implementation(), new Service2Implementation(), new Service3Implementation())
+
+application.run.unsafeRunSync()
+```
+
+Obviously, the last one is pretty easy to understand by non-Scala developer, the only thing they need to learn is how to use IO.
+
+Actually, for eff architecture, we even spend 3 months to decommission it from all related projects. Because it need supper senior knowledge of functional programming, after some senior team members left, only few people can understand and maintain it. Although it make everything pure and easy to compose, it's still not a good time to continue to use it.
+
+We use the traditional OO architecture to group the pure functions, there is no mutable property in it, all the data processed by function is still immutable.
+
+Most of developers are familiar with the architecture, they just need to focus on how to make the function pure.
+
+With this way, we can utilize the advantage of functional programming, and make our new team members happy.
 
 ## Move senior code to framework
 
