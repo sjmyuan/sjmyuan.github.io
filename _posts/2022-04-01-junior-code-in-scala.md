@@ -1,10 +1,14 @@
 ---
 title: Write Junior Code in Scala
 tags:
-  - Scala
-  - Team
+- Scala
+- Team
+header:
+  overlay_image: https://images.shangjiaming.com/bruno-kelzer-b5R-EetfgwM-unsplash.jpeg
+  overlay_filter: 0.5
+  caption: 'Photo credit: [**Unsplash**](https://unsplash.com)'
+date: 2022-04-01 00:06 +0800
 ---
-
 What makes us excited when coding? Refactoring the code, involving new technology, or using a fantastic solution to resolve a hard problem?
 
 These things are harder and can prove our ability. But we should not forget all team members will maintain them, not only us.
