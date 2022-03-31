@@ -130,7 +130,7 @@ If we want to compose these two functions, we need to convert Option to Either
 
 ```scala
 for{
-  x <- last(List("1")).toEither("The list is empty")
+  x <- last(List("1")).toRight("The list is empty")
   value <- toInt(x)
 } yield value
 ```
