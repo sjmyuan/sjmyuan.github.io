@@ -170,7 +170,7 @@ trait ApplicationEffect[A]
 
 case object Start extends ApplicationEffect[Nothing]
 
-type Stack = Fx.fx4[ApplicationEffect, Service1Effect, Service2Effect, Service3Effect, IO]
+type Stack = Fx.fx5[ApplicationEffect, Service1Effect, Service2Effect, Service3Effect, IO]
 
 implicit class Service1InterpretationOps[R, A](eff: Eff[R, A]) {
   def runService1[U: Member.Aux[Service1Effect, R, ?]: HasIO, A](): Eff[U, A] = ???
