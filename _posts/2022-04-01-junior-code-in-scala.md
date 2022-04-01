@@ -27,7 +27,7 @@ In this post, I will share the reason for the decision and show you how to write
 
 We tried to hire people with our required techniques, such as Functional Programming in Scala, [Cats](https://typelevel.org/cats/), [Fs2](https://fs2.io/#/), [http4s](https://http4s.org/), [circe](https://circe.github.io/circe/), [doobie](https://tpolecat.github.io/doobie/), [eff](https://atnos-org.github.io/eff/), etc. But it's harder than we thought.
 
-In the past 5 years, we got 18 new team members, only 2 of them have Spark experience and 3 of them become senior Scala developers.
+In the past 5 years, we got 18 new team members, only 2 of them have Spark experience.
 
 Most of the new team members are from other tech stacks, for example, Java, JavaScript, or Ruby.
 
