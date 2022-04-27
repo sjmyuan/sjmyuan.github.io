@@ -24,30 +24,32 @@ I already created [vavr-examples](https://github.com/sjmyuan/vavr-examples), wel
 # How to install Vavr?
 
 * Maven
-```xml
-<dependencies>
-    <dependency>
-        <groupId>io.vavr</groupId>
-        <artifactId>vavr</artifactId>
-        <version>0.10.4</version>
-    </dependency>
-</dependencies>
-```
+
+    ```xml
+    <dependencies>
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>0.10.4</version>
+        </dependency>
+    </dependencies>
+    ```
 
 * Gradle
-```
-dependencies {
-    compile "io.vavr:vavr:0.10.4"
-}
-```
+
+    ```
+    dependencies {
+        compile "io.vavr:vavr:0.10.4"
+    }
+    ```
 
 * Gradel 7 +
 
-```
-dependencies {
-    implementation "io.vavr:vavr:0.10.4"
-}
-```
+    ```
+    dependencies {
+        implementation "io.vavr:vavr:0.10.4"
+    }
+    ```
 
 # How to use Vavr?
 
@@ -125,13 +127,13 @@ Vavr redefines the common collection data type to make them immutable.
 We can construct List by some util functions
 
 ```java
-java.util.List<Integer> javaList = new java.util.LinkedList<Integer>()
-javaList.add(1)
-javaList.add(2)
-javaList.add(3)
+java.util.List<Integer> javaList = new java.util.LinkedList<Integer>();
+javaList.add(1);
+javaList.add(2);
+javaList.add(3);
 
-List.of(1,2,3)
-List.ofAll(javaList)
+List.of(1,2,3);
+List.ofAll(javaList);
 ```
 
 The List is immutable, any changes to the list instance will create a new instance
