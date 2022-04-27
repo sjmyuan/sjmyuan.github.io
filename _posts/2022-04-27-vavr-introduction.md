@@ -116,7 +116,7 @@ public void modifyParameterIsSideEffect() {
 }
 ```
 
-The answer is no, it returns void. But actually, changes the `intList1` which is outside of the function.
+The answer is no. it returns void, but actually, changes the `intList1` which is outside of the function.
 
 We can code like this because the `List` is mutable. To avoid the modification of the outside variable, we need to make the data type immutable.
 
