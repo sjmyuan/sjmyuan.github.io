@@ -4,7 +4,7 @@ tags:
   - Protocol
 ---
 
-Recently I readed a book **Mastering OAuth 2.0**[^1], it give me a very clear picture for this protocol. In this blog I want to share the knowledge I learned in this book.
+Recently I read a book **Mastering OAuth 2.0**[^1], it give me a very clear picture for this protocol. In this blog I want to share the knowledge I learned in this book.
 
 # Basic knowledge
 
@@ -50,7 +50,7 @@ From the name, we can see OAuth is used to do **Authorization** and it is suppor
 
 The book give an example about getting the friend list of facebook, I will share another example about Gmail and Outlook
 
-In my daliy work, I need to use two email account Gmail and Outlook, here is my workflow
+In my daily work, I need to use two email account Gmail and Outlook, here is my workflow
 
 * Somebody organize a meeting through Outlook
 * When I receive the Outlook meeting, I need to organize a same meeting in Gmail and invite the Gmail account of the same invitees
@@ -64,14 +64,14 @@ This app at least need to do these things
 * Read my Outlook calendar
 * Write new calendar to my Gmail calendar
 
-But I can't trust this app even I write the code. I don't know if a hacker can hack this app and get all the information of my account, then it will be a disaster, they can do anything on my behalf. So I won't store my account information in this app. And if the disaster happend, I want to stop it as soon as possible, so I need a way to control the access of this app.
+But I can't trust this app even I write the code. I don't know if a hacker can hack this app and get all the information of my account, then it will be a disaster, they can do anything on my behalf. So I won't store my account information in this app. And if the disaster happened, I want to stop it as soon as possible, so I need a way to control the access of this app.
 
 So based on this example, we can get two basic requirements about this app
 
-* The app shouldn't store the acccount information(username/password)
+* The app shouldn't store the account information(username/password)
 
 * I should be able to control the access of the app, that is
-  * The app can only access the data I concent
+  * The app can only access the data I consent
   * I can stop the access in any time
 
 ## How to implement?
@@ -81,7 +81,7 @@ Let's only talk about Outlook for now, Gmail is just the same thing with differe
 The current scenario is Outlook have the data and the app want to access it, but Outlook won't recognize the app and I'm the only person (the account manager) who have the right to access the data. Now the app have to find a way to access the data on my behalf, it only have two options
 
 1. Use my username/password to access the data on my behalf
-2. Find a way to get my concent of data access and ensure it only read the calendar data
+2. Find a way to get my consent of data access and ensure it only read the calendar data
 
 The first option will concern me, I don't want to give my username/password to an app which may be out of my control, so I (account manager) won't agree it.
 
@@ -89,9 +89,9 @@ The second option seems reasonable to me if Outlook can notify me who will acces
 
 Now the ball goes to Outlook. If Outlook does nothing, the app can't be implemented. Let's imagine what actions should be done by Outlook.
 
-1. Outlook won't take the risk to leak my data, so it will only allow the app to access the data after I concent
+1. Outlook won't take the risk to leak my data, so it will only allow the app to access the data after I consent
 
-2. Outlook should prepare the different access level to allow the app to choose and let me to concent
+2. Outlook should prepare the different access level to allow the app to choose and let me to consent
 
 3. Outlook should always think the app is not safe and I can revoke the access in any time
 
@@ -105,7 +105,7 @@ Based on these actions, Outlook can create a special account for the app, this s
 2. password
 3. app information
 
-The app can use the special account to login Outlook and request access to somebody's data, then Outlook will prompt the request to correspond account manager. if the account manager concent the access, Outlook use the app information in the special account to notify app how to build trusted connection to access the data.
+The app can use the special account to login Outlook and request access to somebody's data, then Outlook will prompt the request to correspond account manager. if the account manager consent the access, Outlook use the app information in the special account to notify app how to build trusted connection to access the data.
 
 If the built connection become untrusted, Outlook won't return the data. If account manager regret the agreement, they can revoke the access manually in any time.
 
@@ -119,7 +119,7 @@ In OAuth 2.0, there are 3 roles[^2]
 
 1. The User
 
-   A natural person who is the resouce owner and want to use the resource to do something in other platform which is not the resource provider.
+   A natural person who is the resource owner and want to use the resource to do something in other platform which is not the resource provider.
 
    An example is I want to use my Outlook data in an app which can help me to organize meeting.
 
@@ -131,13 +131,13 @@ In OAuth 2.0, there are 3 roles[^2]
 
 3. Resource Provider
 
-   It usually contains two parts: Resource Server and Authorization Server, It is a platform which contains the privacy data of User and it can share these data if User concent the access
+   It usually contains two parts: Resource Server and Authorization Server, It is a platform which contains the privacy data of User and it can share these data if User consent the access
 
    An example is Outlook which have my calendar data.
 
-## How to recogonize the third party application?
+## How to recognize the third party application?
 
-If the third party application want to use the data, it should register a "Client" in the Resource Provider, this "Client" will contians following information:
+If the third party application want to use the data, it should register a "Client" in the Resource Provider, this "Client" will contains following information:
 
 1. Client Name
 
@@ -145,7 +145,7 @@ If the third party application want to use the data, it should register a "Clien
 
 2. Client Id and Client Secret
 
-   The Id is unique and used by Resouce Provider to identify the Client
+   The Id is unique and used by Resource Provider to identify the Client
 
    The secret is just like the password, will be used in the authorization code grant type, should be stored confidentially
 
@@ -157,7 +157,7 @@ Just like the user credential, when the third-party application want to contact 
 
 ## How to control the access level?
 
-The Resource Provider will split the resouces in different scopes, when the third-party application request access, it need to choose which scope it need to access. In this way, The User can give the least access to the third-party application and our data will be more secure.
+The Resource Provider will split the resources in different scopes, when the third-party application request access, it need to choose which scope it need to access. In this way, The User can give the least access to the third-party application and our data will be more secure.
 
 An example about the scopes which we need to access the Outlook calendar data:
 
@@ -165,7 +165,7 @@ An example about the scopes which we need to access the Outlook calendar data:
 openid,offline_access,Calendars.Read
 ```
 
-## How to get the concent of access?
+## How to get the consent of access?
 
 The Resource Provider will provide an authorization endpoint which can be used by the third-party application to request the data access. An example looks like this[^1][^2]:
 
@@ -187,16 +187,16 @@ When the third-party application redirect us to this url, we will see the follow
 
 ![](https://aaronparecki.com/oauth-2-simplified/oauth-authorization-prompt.png)
 
-The Resouce Provider will do two things here
+The Resource Provider will do two things here
 
 * Authenticate your account
-* Request your concent to allow the third-party application to access the specified data
+* Request your consent to allow the third-party application to access the specified data
 
-Once we concent the access, the Resouce Provider will send the essential information to the third-party application, then it can access our data.
+Once we consent the access, the Resource Provider will send the essential information to the third-party application, then it can access our data.
 
-## How to send the concent information?
+## How to send the consent information?
 
-After we concent the access, the Resource Provider will use the redirect uri in the Client to notify the third-party application with the essential data. the content of data depends on which grant type we are using.
+After we consent the access, the Resource Provider will use the redirect uri in the Client to notify the third-party application with the essential data. the content of data depends on which grant type we are using.
 
 ### Implicit grant type
 
@@ -229,7 +229,7 @@ The parameters of request authorization code response are[^1]:
 http://example.com/callback?code=ey6XeGlAMHBpFi2LQ9JHyT6xwLbMxYRvyZAR
 ```
 
-The parameters of exchage access token are[^1]
+The parameters of exchange access token are[^1]
 
 - **grant_type**: (Required) This must be set to `authorization_code` to signify that we are requesting an access token in exchange for an authorization code
 - **code**: (Required) This is the authorization code value that you received in response to the authorization request we made earlier
@@ -272,11 +272,11 @@ Pragma: no-cache
 
 ## How to keep the trusted connection?
 
-The Resource Provider will use a token(usually a bear token) to identify the trusted connection. the token has limited access and is shortterm. When the token is expired, the third-party application need to get it again. Some Resource Provider will provide a refresh token to trusted client, the third-party application can use the refresh token to refresh the access token.
+The Resource Provider will use a token(usually a bear token) to identify the trusted connection. the token has limited access and is short term. When the token is expired, the third-party application need to get it again. Some Resource Provider will provide a refresh token to trusted client, the third-party application can use the refresh token to refresh the access token.
 
 # The whole workflow
 
-The workflow of OAuth 2.0 is a process of building trusted connection between the Resouce Provider and thrid-party application.
+The workflow of OAuth 2.0 is a process of building trusted connection between the Resource Provider and third-party application.
 
 ## Implicit grant type
 
@@ -294,5 +294,5 @@ I have implemented the app using OAuth 2.0, if you are interested, you can find 
 
 [^1]: [Mastering OAuth 2.0](https://www.amazon.com/Mastering-OAuth-2-0-Charles-Bihis/dp/1784395404/ref=sr_1_2?ie=UTF8&qid=1545993641&sr=8-2&keywords=Mastering+OAuth+2.0)
 
-[^2]: [OAuth 2 Simpified](https://aaronparecki.com/oauth-2-simplified/)
+[^2]: [OAuth 2 Simplified](https://aaronparecki.com/oauth-2-simplified/)
 [^3]: [Why is there an “Authorization Code” flow in OAuth2 when “Implicit” flow works so well?](https://stackoverflow.com/questions/13387698/why-is-there-an-authorization-code-flow-in-oauth2-when-implicit-flow-works-s)
