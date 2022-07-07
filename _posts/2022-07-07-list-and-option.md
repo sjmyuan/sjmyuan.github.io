@@ -11,7 +11,7 @@ header:
 date: 2022-07-07 21:46 +0800
 ---
 
-We already introduced Vavr in [Vavr Introduction](https://blog.shangjiaming.com/vavr-introduction/). In my daily work, there are lots of scenarios to use `List` and `Option` together, we will talk about some common scenarios in this post.
+We already introduced Vavr in [Vavr Introduction](https://blog.shangjiaming.com/vavr-introduction/). In our daily work, there are lots of scenarios to use `List` and `Option` together, we will talk about some common scenarios in this post.
 
 # List to Option
 

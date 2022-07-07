@@ -305,7 +305,7 @@ We can create a new function to handle this scenario
 
 ```scala
 def computeIfNormalForComplexFunction(data:Data)(f:Double=>Data):Data = data match {
-    case Normal(v) => Normal(f(v))
+    case Normal(v) => f(v)
     case _ => data
 }
 
