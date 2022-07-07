@@ -94,7 +94,7 @@ Int sumValue = sum(List.ofAll(option)); // 1
 
 `List::ofAll` can convert any `Iterable` to List, luckily`Option` is a child of `Iterable`.
 
-# List<Option> to List
+# List\<Option\> to List
 
 Say we have a list of `Option<Integer>`, we need to filter out `None` and get the `Integer` out of `Option`. For example
 
@@ -143,7 +143,7 @@ List<Integer> oddList = list.flatMap(this::isOdd); // List(1, 3)
 
 Not all the functional programming libraries support this, like [cats](https://typelevel.org/cats/). Because it doesn't follow the definition of Monad strictly. But it's very convenient in practice.
 
-# List<Option> to Option<List>
+# List\<Option\> to Option\<List\>
 
 Say we have a list of id, we require to fetch the user name by id, then return all the names or nothing if there is any error.
 
