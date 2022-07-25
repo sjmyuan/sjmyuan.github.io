@@ -320,7 +320,7 @@ public void factorial(Long n, Consumer<Long> continuation) {
             continuation.accept(1l);
             return null;
         };
-        think.get();
+        thunk.get();
         return;
     }
     Supplier<Void> thunk = () -> {
