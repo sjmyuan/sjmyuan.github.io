@@ -24,14 +24,16 @@ At that time, I was puzzled by the team's response. Why wasn't everyone actively
 Later, I realized that I had misunderstood the goals and methods. If every deployment by the team brings about many issues and even economic losses, even if we can establish a continuous deployment pipeline, the team would hesitate to let it run. After all, no one can bear the cost of losing one million for every code commit. Therefore, continuous deployment should not be seen as a method for improving team performance, but rather as the goal of improving team performance. To achieve continuous deployment, the first step is to reduce the risk of deployment failures and eliminate the team's anxiety.
 
 [Risk](https://www.sciencedirect.com/science/article/abs/pii/S095183201000027X) is typically composed of three elements:
+
 $$
 Risk = (A,C,P)
 $$
-- $A$ is an event or situation
-- $C$ is the consequence of A
-- $P$ is the uncertainty about A and C
 
-In this article, $A$ represents deployment failure. So, we can use $P$ and $C$ to measure the risk of deployment failure. $P$ represents the team's confidence level in successful deployment (note that,  $the\ confidence\ level\ in\ successful\ deployment = 1 - the\ confidence\ level\ in\ deployment\ failure$), and $C$ represents the losses caused by deployment failure. To better illustrate the relationship between them, we can refer to the [Fogg Behavior Model](https://behaviormodel.org/) and create the following diagram.
+- $$A$$ is an event or situation
+- $$C$$ is the consequence of $$A$$
+- $$P$$ is the uncertainty about $$A$$ and $$C$$
+
+In this article, $$A$$ represents deployment failure. So, we can use $$P$$ and $$C$$ to measure the risk of deployment failure. $$P$$ represents the team's confidence level in successful deployment (note that,  $$the\ confidence\ level\ in\ successful\ deployment = 1 - the\ confidence\ level\ in\ deployment\ failure$$), and $$C$$ represents the losses caused by deployment failure. To better illustrate the relationship between them, we can refer to the [Fogg Behavior Model](https://behaviormodel.org/) and create the following diagram.
 
 ![](https://images.shangjiaming.top/20240323-030834.png)
 
@@ -62,20 +64,24 @@ We can use [Laplace's Rule of Succession](https://en.wikipedia.org/wiki/Rule_of_
 
 ![](https://images.shangjiaming.top/federico-respini-sYffw0LNr7s-unsplash.jpeg)
 
-If $X_1, \dots, X_n$ stands for n known deployments, where a value of 0 represents failure and 1 represents success, then when there are $s$ successful deployments out of $X_1, \dots, X_n$, the probability of the $(n+1)$-th deployment $X_{n+1}$ is:
+If $$X_1, \dots, X_n$$ stands for $$n$$ known deployments, where a value of 0 represents failure and 1 represents success, then when there are $$s$$ successful deployments out of $$X_1, \dots, X_n$$, the probability of the $$(n+1)$$-th deployment $$X_{n+1}$$ is:
+
 $$
 P(X_{n+1} = 1|X_1 +\cdots+X_n=s)=\frac{s+1}{n+2}
 $$
+
 The probability mentioned here refers to [subjective probability](https://www.investopedia.com/terms/s/subjective_probability.asp), which is what we refer to as the confidence level.
 
 We do not use the following formula
+
 $$
 P(X_{n+1} = 1|X_1 +\cdots+X_n=s)=\frac{s}{n}
 $$
+
 because
-1. The above formula cannot handle the situation where there is no deployment, as $\frac{0}{0}$ is undefined.
-2. The above formula cannot handle the situation where all known deployments are successful. $\frac{10}{10}$ does not mean the team believes that the next deployment will definitely be successful.
-3. The above formula cannot handle the situation where all known deployments have failed. $\frac{0}{10}$ does not mean the team believes that the next deployment will definitely fail.
+1. The above formula cannot handle the situation where there is no deployment, as $$\frac{0}{0}$$ is undefined.
+2. The above formula cannot handle the situation where all known deployments are successful. $$\frac{10}{10}$$ does not mean the team believes that the next deployment will definitely be successful.
+3. The above formula cannot handle the situation where all known deployments have failed. $$\frac{0}{10}$$ does not mean the team believes that the next deployment will definitely fail.
 4. When there are a large number of deployments, the results of the two formulas tend to be consistent. However, when the number of deployments is small, the Laplace's rule of succession is more reasonable.
 
 # The impact of deployment on confidence level
@@ -85,51 +91,65 @@ because
 ## The impact of the first deployment is most evident
 
 Before any deployment, the team's confidence level in the first deployment is
+
 $$
 P(X_1 = 1) = \frac{0+1}{0+2} = 50\%
 $$
+
 This means that the team has no clear preference for the deployment outcome.
 
 When the first deployment is successful, the team's confidence level in the second deployment becomes
+
 $$
 P(X_2 = 1|X_1=1) = \frac{1+1}{1+2} \approx 66.7\%
 $$
+
 When the first deployment fails, the team's confidence level in the second deployment becomes
+
 $$
 P(X_2 = 1|X_1=0) = \frac{0+1}{1+2} \approx 33.3\%
 $$
+
 It can be seen that through the first deployment, the team has developed a clear preference for the subsequent deployments.
 
 ## Continuous successful deployments can quickly increase confidence level
 
-If the team can successfully deploy three times in a row, the team's confidence level in the fourth deployment is 80%.
+If the team can successfully deploy three times in a row, the team's confidence level in the fourth deployment is $$80\%$$.
 
 $$
 P(X_4 = 1|X_1+X_2+X_3=3) = \frac{3+1}{3+2} = 80\%
 $$
-To achieve a confidence level of over 90%, the team needs to successfully deploy at least eight times in a row.
+
+To achieve a confidence level of over $$90\%$$, the team needs to successfully deploy at least eight times in a row.
+
 $$
 P(X_9 = 1|X_1+X_2+X_3+X_4+X_5+X_6+X_7+X_8=8) = \frac{8+1}{8+2} = 90\%
 $$
 
 ## We need more successful deployments to regain confidence level after a deployment failure
 
-If the team fails on the fourth deployment, we would need four consecutive successful deployments in order for the confidence level to return to $80\%$.
+If the team fails on the fourth deployment, we would need four consecutive successful deployments in order for the confidence level to return to $$80\%$$.
+
 $$
 P(X_5 =1 |X_1+X_2+X_3+X_4=3) = \frac{3+1}{4+2} \approx 66.7\%
 $$
+
 $$
 P(X_6=1|X_1+X_2+X_3+X_4+X_5=4) = \frac{4+1}{5+2} \approx 71.4\%
 $$
+
 $$
 P(X_7=1|X_1+X_2+X_3+X_4+X_5+X_6=5) = \frac{5+1}{6+2} = 75\%
 $$
+
 $$
 P(X_8=1|X_1+X_2+X_3+X_4+X_5+X_6+X_7=6) = \frac{6+1}{7+2} \approx 77.8\%
 $$
+
 $$
 P(X_9=1|X_1+X_2+X_3+X_4+X_5+X_6+X_7+X_8=7) = \frac{7+1}{8+2} = 80\%
 $$
+
 # How to improve confidence level?
 
 From the analysis above, it is evident that in order to improve confidence level, we must ensure the success of deployment, which means that the deployed software meets the customer's requirements. This is also the definition of quality in the book [Quality is Free](https://www.goodreads.com/book/show/1031937.Quality_Is_Free). In other words, improving confidence level is synonymous with improving the quality of deployment.
@@ -181,6 +201,7 @@ We can try the following practices to deepen team members' understanding of soft
 6. Provide timely feedback to BA during the development process. Team members' understanding of requirements deepens during the development process. By analyzing the code implementation of existing requirements, we may discover many questions that the original requirements couldn't answer. In such cases, it's important to provide timely feedback and clarification to the BA to ensure the correctness and completeness of the requirements.
 
 7. Adopt [a lightweight approach to RFCs](https://www.thoughtworks.com/radar/techniques/lightweight-approach-to-rfcs). RFC is a decision-making process that invites all relevant parties to review and provide feedback on proposals to ensure their reasonableness. Software requirements often involve many decision-making scenarios. By using RFC when the solution affects other teams, we can ensure that team members have a deep understanding of the upstream and downstream relationships of software requirements.
+
 ### Proficient grasp of the basics of software development
 
 The basics of software development determines the implementation of software requirements. It relies on the technical capabilities of team members as well as the knowledge accumulated by the team.
