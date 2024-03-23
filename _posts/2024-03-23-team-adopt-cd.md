@@ -33,7 +33,7 @@ $$
 
 In this article, $A$ represents deployment failure. So, we can use $P$ and $C$ to measure the risk of deployment failure. $P$ represents the team's confidence level in successful deployment (note that,  $the\ confidence\ level\ in\ successful\ deployment = 1 - the\ confidence\ level\ in\ deployment\ failure$), and $C$ represents the losses caused by deployment failure. To better illustrate the relationship between them, we can refer to the [Fogg Behavior Model](https://behaviormodel.org/) and create the following diagram.
 
-![[20240323-030834.png]]
+![](https://images.shangjiaming.top/20240323-030834.png)
 
 From the diagram, we can observe the following:
 
@@ -80,7 +80,7 @@ because
 
 # The impact of deployment on confidence level
 
-![[circle-pipeline]]
+![](https://images.shangjiaming.top/circle-pipeline.png)
 
 ## The impact of the first deployment is most evident
 
@@ -150,7 +150,7 @@ Based on the definition above, the types of automated testing and test cases sho
 
 The diagram below shows the Agile Testing Quadrants from the book [Agile Testing](https://www.goodreads.com/book/show/5341009-agile-testing) . It lists different types of testing and their applicable scenarios.
 
-![[agile-testing-quadrants]]
+![](https://images.shangjiaming.top/agile-testing-quadrants.png)
 
 Using the most common types of tests as examples, such as unit tests, component tests, and functional tests, an automated testing strategy can require team members to implement functionality in the form of [test-driven development](https://en.wikipedia.org/wiki/Test-driven_development), combined with the current architecture, and provide necessary test case examples and implementation steps. When a bug occurs, we can conduct a retrospective based on the testing strategy, the action could be requiring the team to adhere to the testing strategy or updating the testing strategy to ensure that the bug can be detected by automated testing. Conversely, the absence of an automated testing strategy would result in a lack of unified requirements for automated testing within the team, and the quality of automated testing would not be improved.
 
