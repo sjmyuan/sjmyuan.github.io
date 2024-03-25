@@ -92,7 +92,7 @@ social:
 
 # Analytics
 analytics:
-  provider               : "google" # false (default), "google", "google-universal", "custom"
+  provider               : "false" # false (default), "google", "google-universal", "custom"
   google:
     tracking_id          : "UA-112547727-1" 
     anonymize_ip         : # true, false (default)
