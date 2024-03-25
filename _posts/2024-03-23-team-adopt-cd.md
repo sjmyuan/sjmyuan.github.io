@@ -234,7 +234,13 @@ Continuous deployment failures can quickly decrease confidence level. A crucial 
 We quantify loss here using the failure costs, which refers to the expenses involved in dealing with issues after deployment failures. Please note that we do not consider prevention costs and appraisal costs because teams often do not consider activities such as retrospective, testing, and refactoring as risk factors.
 
 $$
-Loss = problem\ assessment\ time \times salary + problem\ resolution\ time \times salary + customer\ service\ time \times salary + customer\ compensation+implicit\ losses
+\begin{align}
+Loss =& problem\ assessment\ time \times salary
+\\ & + problem\ resolution\ time \times salary
+\\ & + customer\ service\ time \times salary
+\\ & + customer\ compensation
+\\ & + implicit\ losses
+\end{align}
 $$
 
 - Problem assessment time: The time taken to identify the cause of the problem and provide a solution.
