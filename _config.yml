@@ -270,6 +270,7 @@ defaults:
       toc_label: "On This Page"
       share: true
       related: true
+      classes: wide
   # _pages
   - scope:
       path: ""
