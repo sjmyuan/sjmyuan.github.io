@@ -265,12 +265,11 @@ defaults:
       author_profile: false
       read_time: true
       comments: true
-      toc: false
+      toc: true
       toc_sticky: false
       toc_label: "On This Page"
       share: true
       related: true
-      classes: wide
   # _pages
   - scope:
       path: ""
