@@ -52,14 +52,14 @@ $$
 
 ![](https://images.shangjiaming.top/20250612-092046.png)
 
-Here, we define the $Usage\text{ }Rate$ as the percentage of time developers use AI coding assistants out of their total development time. From the model, we see that factors affecting usage rates include four elements:
+Here, we define the $$Usage\text{ }Rate$$ as the percentage of time developers use AI coding assistants out of their total development time. From the model, we see that factors affecting usage rates include four elements:
 
-* $Trust$: Developers’ level of trust in AI coding assistants, which can be rated from 1-10 based on subjective perception.
-* $Self\text{ } Confidence$: Developers’ confidence in their own abilities, which can also be rated from 1-10.
-* Bias ($b$): Developers’ inherent negative tendency towards AI coding assistants, mainly determined by past experiences and environment. A higher $b$ value means lower willingness to use AI coding assistants.
-* Shape parameter ($s$): The strength of developers’ inclination to maintain existing work habits. Larger $s$ values indicate greater resistance to changing current development habits.
+* $$Trust$$: Developers’ level of trust in AI coding assistants, which can be rated from 1-10 based on subjective perception.
+* $$Self\text{ } Confidence$$: Developers’ confidence in their own abilities, which can also be rated from 1-10.
+* Bias ($$b$$): Developers’ inherent negative tendency towards AI coding assistants, mainly determined by past experiences and environment. A higher $$b$$ value means lower willingness to use AI coding assistants.
+* Shape parameter ($$s$$): The strength of developers’ inclination to maintain existing work habits. Larger $$s$$ values indicate greater resistance to changing current development habits.
 
-It's important to note that an AI coding assistant is not a single-function automation tool like a shortcut key but a general automation tool capable of handling any programming task. Therefore, for the same AI coding assistant, **model parameters ($Trust$, $Self\text{ }Confidence$, $b$, $s$) vary across different task types**. For example:
+It's important to note that an AI coding assistant is not a single-function automation tool like a shortcut key but a general automation tool capable of handling any programming task. Therefore, for the same AI coding assistant, **model parameters ($$Trust$$, $$Self\text{ }Confidence$$, $$b$$, $$s$$) vary across different task types**. For example:
 
 * Although developers trust AI coding assistants to generate code blocks efficiently, this does not mean they equally trust them to fix online bugs effectively.
 * While developers are confident in implementing new features efficiently within existing structures, it does not mean they also trust themselves to refactor architectures efficiently.
@@ -83,19 +83,19 @@ Let’s use this model to explain some common phenomena.
 
 Within the same team, for similar tasks, everyone's trust level in AI coding assistants should be relatively close. There may be differences in biases towards AI coding assistants, but they shouldn’t be too large.
 
-The possible difference is that junior developers often have lower self-confidence compared to senior developers, which is reflected in the model as a larger $Trust - Self\text{ }Confidence$ value, leading to higher usage rates among junior developers.
+The possible difference is that junior developers often have lower self-confidence compared to senior developers, which is reflected in the model as a larger $$Trust - Self\text{ }Confidence$$ value, leading to higher usage rates among junior developers.
 
 #### Why is AI coding assistant used more in unfamiliar domains than familiar ones?
 
 ![](https://images.shangjiaming.top/20250614-102312.png)
 
-For the same developer, facing similar tasks over short periods, their bias and trust levels toward AI coding assistants won’t fluctuate significantly. However, when dealing with unfamiliar domains, their self-confidence is usually lower compared to familiar domains, resulting in a higher $Trust - Self\text{ }Confidence$ value, leading to higher usage rates in unfamiliar domains.
+For the same developer, facing similar tasks over short periods, their bias and trust levels toward AI coding assistants won’t fluctuate significantly. However, when dealing with unfamiliar domains, their self-confidence is usually lower compared to familiar domains, resulting in a higher $$Trust - Self\text{ }Confidence$$ value, leading to higher usage rates in unfamiliar domains.
 
 #### Why is AI coding assistant used more in personal projects than in commercial projects?
 
 ![](https://images.shangjiaming.top/20250615-080444.png)
 
-For the same developer, facing similar tasks within the same domain, their bias and self-confidence levels toward AI coding assistants won’t fluctuate significantly over short periods. However, when dealing with commercial projects, their trust in AI coding assistants tends to be lower compared to personal projects because commercial projects often have higher requirements, and higher requirements decrease our trust in AI coding assistants; we need more trust to confidently delegate tasks to AI coding assistants. This is reflected in the model as a higher $Trust - Self\text{ }Confidence$ value in personal projects, leading to higher usage rates in personal projects.
+For the same developer, facing similar tasks within the same domain, their bias and self-confidence levels toward AI coding assistants won’t fluctuate significantly over short periods. However, when dealing with commercial projects, their trust in AI coding assistants tends to be lower compared to personal projects because commercial projects often have higher requirements, and higher requirements decrease our trust in AI coding assistants; we need more trust to confidently delegate tasks to AI coding assistants. This is reflected in the model as a higher $$Trust - Self\text{ }Confidence$$ value in personal projects, leading to higher usage rates in personal projects.
 
 #### Why is knowledge sharing and use-case sharing effective?
 
@@ -107,7 +107,7 @@ When developers are unaware of using AI coding assistants in certain task scenar
 
 Now let’s examine what measures we can take according to the model to increase usage rates.
 
-#### Eliminate Bias ($b$)
+#### Eliminate Bias ($$b$$)
 
 Each developer's bias towards AI coding assistants varies. Some people are very optimistic, willing to try various types of tasks, even if failures don’t affect their attitude towards AI coding assistants. Others are very cautious, only willing to try after AI coding assistants prove effective in specific types of tasks, and quickly give up upon encountering failures.
 
@@ -117,13 +117,13 @@ Next, we need to recognize the costs incurred by using AI coding assistants. Usi
 
 Finally, we need to enhance internal team information sharing. Unlike IDEs, AI coding assistants lack fixed usage methods, so each person may discover methods with high success or failure rates. Only by strengthening information sharing, continuously collecting successful or failed usage methods, summarizing effective practices, and promoting them widely can we maximize the reduction of biases.
 
-#### Provide More Information to Calibrate Subjective Perception ($Trust$, $Self\text{ }Confidence$)
+#### Provide More Information to Calibrate Subjective Perception ($$Trust$$, $$Self\text{ }Confidence$$)
 
 From the model, we see that developers' trust and self-confidence are major factors affecting usage rates, and these two factors are subjective perceptions. We need to provide sufficient information to showcase the development efficiency of AI coding assistants and their own development efficiency to calibrate these subjective perceptions.
 
 For instance, we can identify stories and code commits using AI coding assistants through tags, then analyze metrics of such stories and code commits separately to gauge the development efficiency of AI coding assistants.
 
-#### Enhance Trust Level ($Trust$)
+#### Enhance Trust Level ($$Trust$$)
 
 Although trust often refers to interpersonal trust, in human-computer interaction, it has been extended to include trust in automation tools.
 
@@ -139,7 +139,7 @@ Here, I use the definition of trust from the paper [Trust in Automation: Designi
 
 Regarding trust, various models describe its components. Some describe it as [competence, integrity, consistency, loyalty, and openness](https://psycnet.apa.org/record/1985-13305-001). Others describe it as [credibility, reliability, intimacy, and self-orientation](https://trustedadvisor.com/why-trust-matters/understanding-trust/understanding-the-trust-equation). Still others describe it as [ability, benevolence, and integrity](https://www.jstor.org/stable/258792).
 
-Here, I adopt the model from [Trust in Automation: Designing for Appropriate Reliance](https://journals.sagepub.com/doi/10.1518/hfes.46.1.50_30392), which describes the components of trust as $Performance$, $Process$, and $Purpose$.
+Here, I adopt the model from [Trust in Automation: Designing for Appropriate Reliance](https://journals.sagepub.com/doi/10.1518/hfes.46.1.50_30392), which describes the components of trust as $$Performance$$, $$Process$$, and $$Purpose$$.
 
 $$
 Trust = Performance + Process + Purpose
@@ -147,14 +147,14 @@ $$
 
 Where:
 
-* $Performance$: Current and historical performance of the AI coding assistant, including characteristics like reliability, predictability, ability, etc. It primarily manifests in specific tasks and usage scenarios. Examples:
+* $$Performance$$: Current and historical performance of the AI coding assistant, including characteristics like reliability, predictability, ability, etc. It primarily manifests in specific tasks and usage scenarios. Examples:
     * Whether it is familiar with the developer's domain
     * Whether it understands the developer's task context
     * Whether it can comprehend assigned tasks
     * Whether it can complete tasks within expected time frames
     * Whether it can ensure task completion quality
     * Whether it can consistently complete tasks over multiple uses
-* $Process$: How the AI coding assistant completes tasks, including characteristics like dependability, openness, consistency, understandability, etc. It primarily manifests in behavioral patterns. Examples:
+* $$Process$$: How the AI coding assistant completes tasks, including characteristics like dependability, openness, consistency, understandability, etc. It primarily manifests in behavioral patterns. Examples:
     * Whether it asks good questions about the developer's tasks
     * Whether it provides detailed plans before implementation
     * Whether actual outcomes match described plans
@@ -164,7 +164,7 @@ Where:
     * Whether it allows developers to interrupt at any time
     * Whether it has a well-designed permission control mechanism
     * Whether it allows easy exit and environment restoration
-* $Purpose$: Consistency between the design intent of the AI coding assistant and developer goals. Examples:
+* $$Purpose$$: Consistency between the design intent of the AI coding assistant and developer goals. Examples:
     * Whether it has hallucinations
     * Whether it can guarantee data security
     * Whether it ensures compliance
