@@ -28,6 +28,7 @@ Here are some screenshots of the website interface:
 ![](https://www.shangjiaming.top/archives/how-to-get-the-team-to-truly-embrace-ai-coding-assistant/20250702-101702.png)
 ![](https://www.shangjiaming.top/archives/how-to-get-the-team-to-truly-embrace-ai-coding-assistant/20250702-102126.png)
 ![](https://www.shangjiaming.top/archives/how-to-get-the-team-to-truly-embrace-ai-coding-assistant/20250702-102331.png)
+
 {% include video id="ERhONIOpB5k" provider="youtube" %}
 
 ## Development Process
